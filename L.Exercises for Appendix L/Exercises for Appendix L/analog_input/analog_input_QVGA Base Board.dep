@@ -1,3 +1,0 @@
-Dependencies for Project 'analog_input', Target 'QVGA Base Board': (DO NOT MODIFY !)
-F (.\src\LPC2400.s)(0x6A546A50)(--cpu ARM7TDMI --pd "__EVAL SETA 1" -g -I C:\Keil\ARM\RV31\Inc -I C:\Keil\ARM\CMSIS\Include -I C:\Keil\ARM\Inc\Philips -o ".\output\LPC2400.o" --depend ".\output\LPC2400.d")
-F (.\src\main.c)(0x6A546A50)(-c --cpu ARM7TDMI -D__EVAL -g -O0 -I C:\Keil\ARM\RV31\Inc -I C:\Keil\ARM\CMSIS\Include -I C:\Keil\ARM\Inc\Philips -o ".\output\main.o" --omf_browse ".\output\main.crf" --depend ".\output\main.d")
