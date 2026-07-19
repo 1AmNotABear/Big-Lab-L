@@ -11,7 +11,7 @@
 #define LED2_BLUE (1 << 21) // P3.21
 
 /* triColour LEDs are wired to P3.16 - P3.21 (6 pins)*/
-#define TRICOLOUR_MASK (0x3F << 16)   // covers P3.16 - P2.21
+#define TRICOLOUR_MASK (0x3F << 16)   // covers P3.16 - P3.21
 
 void updateBlindState(HomeState *state) {
 
@@ -35,6 +35,7 @@ void updateBlindState(HomeState *state) {
         triColourBits |= LED2_BLUE;
     }
 
-    FIO3CLR = TRI_COLOUR_MASK;   // clear all tricolour pins first
+    FIO3CLR = TRICOLOUR_MASK;   // clear all tricolour pins first
     FIO3SET = triColourBits;    // set only the pins that should be on
 }
+
