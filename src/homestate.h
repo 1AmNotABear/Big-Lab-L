@@ -11,7 +11,7 @@ typedef enum {
     BLIND_ROLLED_DOWN = 2    // blue
 } BlindPosition;
 
-/* --- Room light bit positions (within the single roomLights byte) ------
+/* --- Room light bit positions + Smart Plug (within the single roomLights byte) ------
  * Bit  |  Light
  * -----|------------
  *  0   |  Bedroom 1
@@ -27,19 +27,13 @@ typedef enum {
 #define LIGHT_BATHROOM  0x08
 #define LIGHT_KITCHEN   0x10
 #define LIGHT_LIVING    0x20
-
-/* --- Smart plug (espresso machine) ------------------------------------ */
-typedef struct {
-    unsigned char on;         // 0 = off, 1 = on
-    unsigned char overridden; // 1 if the daughter-board button forced this state
-} SmartPlugState;
+#define COFFEE_STATUS		0x40
 
 /* --- Combined home state ----------------------------------------------- */
 typedef struct {
     BlindPosition  blind1;
     BlindPosition  blind2;
     unsigned char  roomLights;
-    SmartPlugState plug;
 } HomeState;
 
 /* Declared here, actually defined in homestate.c */

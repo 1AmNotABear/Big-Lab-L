@@ -6,7 +6,7 @@
 
 void setDirections(void) {
     FIO2DIR |= LADDER_MASK;    // LED ladder data pins as outputs
-    FIO0DIR |= LADDER_ENABLE;  // LED ladder enable pin as output
+    IODIR0  |= LADDER_ENABLE;  // LED ladder enable pin (P0.22) as output - legacy regs, port 0 is in legacy mode (GPIOM=0)
     FIO3DIR |= TRICOLOUR_MASK; // blind tricolour LED pins as outputs
 
     // Add more peripheral direction setup here as they're added,
@@ -14,5 +14,5 @@ void setDirections(void) {
 }
 
 void enablePeripherals(void) {
-    FIO0SET = LADDER_ENABLE;   // drive the ladder enable pin high, permanently on
+    IOSET0 = LADDER_ENABLE;    // drive the ladder enable pin (P0.22) high, permanently on - legacy regs (GPIOM=0)
 }
