@@ -20,6 +20,7 @@ typedef enum {
  *  3   |  Bathroom
  *  4   |  Kitchen
  *  5   |  Living room
+ *  6   |  Smart Plug State
  */
 #define LIGHT_BEDROOM1  0x01
 #define LIGHT_BEDROOM2  0x02
@@ -27,6 +28,7 @@ typedef enum {
 #define LIGHT_BATHROOM  0x08
 #define LIGHT_KITCHEN   0x10
 #define LIGHT_LIVING    0x20
+#define SMART_PLUG_STATE 0x40
 
 /* --- Smart plug (espresso machine) ------------------------------------ */
 typedef struct {
