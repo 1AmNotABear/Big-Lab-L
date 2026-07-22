@@ -2,6 +2,7 @@
 #include "homestate.h"
 #include "lights.h"
 #include "blinds.h"
+#include "TEMT6000.h"
 #include "ADC.h"
 
 void setDirections(void);
@@ -35,6 +36,9 @@ int main(void) {
             homeState.blind1 = BLIND_ROLLED_DOWN;
         }
         updateBlindState(&homeState);
+
+        // or we can use the light sensor 
+        int light_lux = light();
     }
     return 0;
 }
