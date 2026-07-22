@@ -3,6 +3,12 @@
 
 #define DOORBELL_BTN (1 << 10) // P0.10 for push button corresponding to the doorbell
 
+// Chime notes
+#define DS5 	3215/2
+#define E5 		3030/2
+#define FS5 	2725/2
+
+
 struct tone {
 	int duration;
 	int pitch;
@@ -10,11 +16,12 @@ struct tone {
 };
 
 struct tone chime_data[] = {
-    {10, 2725, 0x300}, // (duration, period, and volume)
-    {10, 2725, 0x300}, // (duration, period, and volume)
-    {10, 2725, 0x300}, // (duration, period, and volume)
-    {10, 2725, 0x300}, // (duration, period, and volume)
-    {10, 2725, 0x300} // (duration, period, and volume)
+	{1, DS5, 0x300},	
+	{1, DS5, 0x1A0},	
+	{1, E5, 0x300},
+	{1, E5, 0x1A0},
+	{1, FS5, 0x300},
+	{1, FS5, 0x1A0},
 };
 
 // Function Prototype
@@ -24,18 +31,18 @@ void udelay(unsigned int delay_in_us);
 // Detects when the doorbell is actually pushed
 void pushDoorbell(HomeState *state) {
 
-    int rate = 5200; // Sets speed that the sounds plays
+    unsigned int btn_pressed = (FIO0PIN & DOORBELL_BTN); // Whether button pushed or not
+	int rate = 5200; // Sets speed that the sounds plays
 
     // Setup DAC
 	PINSEL1 &= ~(3 << 20); // Clears bits 21:20
 	PINSEL1 |= (2 << 20); // Sets bits 21:20 to 0b10 (AOUT)
 
-    unsigned char btn_pressed = (FIO0PIN & DOORBELL_BTN) ? 1 : 0; // Whether button pushed or not
-
-    if (btn_pressed == 1) {
-
-        for (int i = 0; i < 5; i++) {
-            ringDoorbell(rate * chime_data[i].duration, chime_data[i].pitch, chime_data[i].volume); // Rings for 3 seconds with period of 1 second
+    if (btn_pressed != 0) {
+        for (int k = 0; k < 5; k++) {
+			for (int i = 0; i < 6; i++) { // Repeats loop pf chimes 5 times
+				ringDoorbell(rate * chime_data[i].duration, chime_data[i].pitch, chime_data[i].volume); // Rings for 3 seconds with period of 1 second
+			}
         }
     }
 
@@ -63,7 +70,6 @@ void ringDoorbell(unsigned int duration, int period, int vol) {
 	}
 
 	DACR = 0; // output silent when done
-
 }
 
 
@@ -71,20 +77,15 @@ void ringDoorbell(unsigned int duration, int period, int vol) {
 void udelay(unsigned int delay_in_us) {
 	if (delay_in_us == 0) return;
 	
-	TOTCR = 0x02; // Reset and disable timer
+	T0TCR = 0x02; // Reset and disable timer
 	
-	TOPR = (Fpclk / 1000000) - 1; // ticks per microsecond accounting for (PR + 1)
+	T0PR = (Fpclk / 1000000); // PR = 72M / microsec
 
-	TOTCR = 0x1; // sets enable high and reset low
+	T0TCR = 0x1; // sets enable high and reset low
 	
 	while (T0TC < delay_in_us) {
 		// hold
 	}
 	
-	TOTCR = 0x00; // disable timer as is
+	T0TCR = 0x00; // disable timer as is
 }
-
-
-
-
-
