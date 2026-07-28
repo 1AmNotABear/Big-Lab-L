@@ -10,6 +10,9 @@ void enablePeripherals(void);
 
 int main(void) {
 
+    unsigned int adcValue;
+    int light_lux;
+
     setDirections();
     enablePeripherals();
 
@@ -27,7 +30,7 @@ int main(void) {
         
         // update blind state based on adc, the numbers are 
         // placeholders based on 10 bit adc.
-        unsigned int adcValue = readADC();
+        adcValue = readADC();
         if (adcValue > 682) {
             homeState.blind1 = BLIND_ROLLED_UP;
         } else if (adcValue > 341) {
@@ -38,7 +41,8 @@ int main(void) {
         updateBlindState(&homeState);
 
         // or we can use the light sensor 
-        int light_lux = light();
+        light_lux = light();
+        (void)light_lux;
     }
     return 0;
 }
