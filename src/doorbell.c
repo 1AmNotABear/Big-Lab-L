@@ -33,14 +33,15 @@ void pushDoorbell(HomeState *state) {
 
     unsigned int btn_pressed = (FIO0PIN & DOORBELL_BTN); // Whether button pushed or not
 	int rate = 5200; // Sets speed that the sounds plays
+	int k, i;
 
     // Setup DAC
 	PINSEL1 &= ~(3 << 20); // Clears bits 21:20
 	PINSEL1 |= (2 << 20); // Sets bits 21:20 to 0b10 (AOUT)
 
     if (btn_pressed != 0) {
-        for (int k = 0; k < 5; k++) {
-			for (int i = 0; i < 6; i++) { // Repeats loop pf chimes 5 times
+        for (k = 0; k < 5; k++) {
+			for (i = 0; i < 6; i++) { // Repeats loop pf chimes 5 times
 				ringDoorbell(rate * chime_data[i].duration, chime_data[i].pitch, chime_data[i].volume); // Rings for 3 seconds with period of 1 second
 			}
         }
