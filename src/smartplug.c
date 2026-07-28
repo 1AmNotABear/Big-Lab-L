@@ -3,11 +3,11 @@
 
 void updateSmartplugState(HomeState *state){
 
-    if(state.roomLights.coffee_state){
-        FIO2SET = COFFEE_STATE;
+    if(state->roomLights & COFFEE_STATUS){
+        FIO2SET = COFFEE_STATUS;
 
     } else{
-        FIO2CLR = COFFEE_STATE;
+        FIO2CLR = COFFEE_STATUS;
     }
 
 }
