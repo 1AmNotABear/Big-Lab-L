@@ -31,9 +31,9 @@ int main(void) {
         // update blind state based on adc, the numbers are 
         // placeholders based on 10 bit adc.
         adcValue = readADC();
-        if (adcValue > 682) {
+        if (adcValue > 310) {
             homeState.blind1 = BLIND_ROLLED_UP;
-        } else if (adcValue > 341) {
+        } else if (adcValue > 150) {
             homeState.blind1 = BLIND_MID_WAY;
         } else {
             homeState.blind1 = BLIND_ROLLED_DOWN;
