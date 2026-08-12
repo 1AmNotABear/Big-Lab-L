@@ -1,6 +1,7 @@
 #include "blind_screen.h"
 #include "pinpad/touch.h"
 #include "../homestate.h"
+#include "../blinds.h"
 #include "../lcd/lcd_hw.h"
 #include "../lcd/lcd_grph.h"
 #include "../lcd/lcd_cfg.h"
@@ -56,6 +57,27 @@ static void drawBlindAt(int index)
     lcd_putString(textX, textY, (unsigned char *)blindButtons[index].label);
 }
 
+// draws the manual-override toggle button for one blind (1 or 2), yellow
+// when override is active
+static void drawOverrideAt(int blindNum)
+{
+    unsigned short x0 = (blindNum == 1) ? 16 : 122;
+    unsigned short x1 = (blindNum == 1) ? 118 : 224;
+    unsigned short y0 = 208;
+    unsigned short y1 = 248;
+    int isOn = (blindNum == 1) ? homeState.blind1Override : homeState.blind2Override;
+    unsigned short bg = isOn ? YELLOW : BUTTON_COLOR;
+    unsigned short fg = isOn ? BLACK : TEXT_COLOR;
+    unsigned int labelLength = getTextLength("OVERRIDE");
+    unsigned short textX = (unsigned short)(x0 + (((x1 - x0 + 1) - labelLength * 6U) / 2U));
+    unsigned short textY = (unsigned short)(y0 + (((y1 - y0 + 1) - 8U) / 2U));
+
+    lcd_fillRect(x0, y0, x1, y1, bg);
+    lcd_drawRect(x0, y0, x1, y1, BORDER_COLOR);
+    lcd_fontColor(fg, bg);
+    lcd_putString(textX, textY, (unsigned char *)"OVERRIDE");
+}
+
 static void drawBlindScreen(void)
 {
     int i;
@@ -74,9 +96,13 @@ static void drawBlindScreen(void)
 
     for (i = 0; i < 6; i++)
         drawBlindAt(i);
+
+    drawOverrideAt(1);
+    drawOverrideAt(2);
 }
 
-// -1 = nothing, 0 = HOME, 1-3 = blind 1 buttons, 4-6 = blind 2 buttons
+// -1 = nothing, 0 = HOME, 1-3 = blind 1 buttons, 4-6 = blind 2 buttons,
+// 7 = blind 1 override, 8 = blind 2 override
 static int coordinates_to_option(int x, int y)
 {
     int col;
@@ -92,11 +118,11 @@ static int coordinates_to_option(int x, int y)
     else
         return -1;
 
-    if (y < 70 || y > 202)
+    if (y < 70 || y > 248)
         return -1;
 
     row = (y - 70) / 46;
-    if (row > 2 || y > 70 + row * 46 + 40)
+    if (row > 3 || y > 70 + row * 46 + 40)
         return -1;
 
     return (row * 2 + col) + 1;
@@ -125,12 +151,24 @@ BlindResult blind_screen_step(void)
             result = BLIND_SELECTED_HOME;
         } else if (option >= 1 && option <= 3) {
             homeState.blind1 = blindButtons[option - 1].position;
+            homeState.blind1Override = 1;
+            updateBlindState(&homeState);
             for (i = 0; i < 3; i++)
                 drawBlindAt(i);
+            drawOverrideAt(1);
         } else if (option >= 4 && option <= 6) {
             homeState.blind2 = blindButtons[option - 1].position;
+            homeState.blind2Override = 1;
+            updateBlindState(&homeState);
             for (i = 3; i < 6; i++)
                 drawBlindAt(i);
+            drawOverrideAt(2);
+        } else if (option == 7) {
+            homeState.blind1Override ^= 1;
+            drawOverrideAt(1);
+        } else if (option == 8) {
+            homeState.blind2Override ^= 1;
+            drawOverrideAt(2);
         }
     }
 

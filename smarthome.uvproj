@@ -399,6 +399,11 @@
               <FilePath>.\src\homestate.c</FilePath>
             </File>
             <File>
+              <FileName>clock.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\clock.c</FilePath>
+            </File>
+            <File>
               <FileName>peripherals.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\peripherals.c</FilePath>
@@ -497,6 +502,11 @@
               <FileName>profiles_screen.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\screens\profiles_screen.c</FilePath>
+            </File>
+            <File>
+              <FileName>schedule_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\screens\schedule_screen.c</FilePath>
             </File>
           </Files>
         </Group>

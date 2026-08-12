@@ -11,10 +11,16 @@
 #include "screens/temp_screen.h"
 #include "screens/blind_screen.h"
 #include "screens/profiles_screen.h"
+#include "screens/schedule_screen.h"
+#include "coffee_screen.h"
 #include "users.h"
 #include "ADC.h"
+#include "clock.h"
+#include "blinds.h"
 
 void touch_init(void);
+void setDirections(void);
+void enablePeripherals(void);
 
 // runs the home screen + LIGHT/BLIND/COFFEE/TEMP dispatch for currentUser,
 // until BACK is pressed on the home screen. Used both for a regular user's
@@ -25,6 +31,8 @@ static void run_user_home(void)
     LightsResult lightsResult;
     TempResult tempResult;
     BlindResult blindResult;
+    CoffeeResult coffeeResult;
+    ScheduleResult scheduleResult;
 
     do {
         do {
@@ -46,21 +54,20 @@ static void run_user_home(void)
                 blindResult = blind_screen_step();
             } while (blindResult == BLIND_IN_PROGRESS);
             // HOME was pressed, loop back and show the home screen again
-        } else if (homeResult != HOME_SELECTED_BACK) {
-            // dedicated COFFEE screen doesn't exist yet - just
-            // acknowledge the choice for now and go back to the pinpad.
-            lcd_fontColor(WHITE, NAVY);
-            switch (homeResult) {
-                case HOME_SELECTED_COFFEE:
-                    lcd_putString(68, 105, (unsigned char *)"COFFEE SELECTED");
-                    break;
-                default:
-                    break;
+        } else if (homeResult == HOME_SELECTED_COFFEE) {
+            do {
+                coffeeResult = coffee_screen_step();
+            } while (coffeeResult == COFFEE_IN_PROGRESS);
+
+            if (coffeeResult == COFFEE_SELECTED_SCHEDULE) {
+                do {
+                    scheduleResult = schedule_screen_step();
+                } while (scheduleResult == SCHEDULE_IN_PROGRESS);
             }
-            mdelay(1000);
+            // HOME was pressed (on coffee or schedule screen), loop back and show the home screen again
         }
     } while (homeResult == HOME_SELECTED_LIGHT || homeResult == HOME_SELECTED_TEMP ||
-             homeResult == HOME_SELECTED_BLIND);
+             homeResult == HOME_SELECTED_BLIND || homeResult == HOME_SELECTED_COFFEE);
 }
 
 int main(void) {
@@ -82,8 +89,21 @@ int main(void) {
     // initialise the touch controller
     touch_init();
 
+    // configure peripheral GPIO directions (e.g. tricolour blind LEDs)
+    setDirections();
+    enablePeripherals();
+
     // initialise the ADC channel used for read_temp()
     setupTempADC();
+
+    // initialise the ADC channel used for the light sensor
+    setupADC();
+
+    // start the simulated clock (60x real time)
+    clock_init();
+
+    // infer the initial blind position from the current sensor readings
+    checkBlindAutomation(&homeState);
 
     while (1) {
         // login gate: poll once per lap until it resolves. This is where

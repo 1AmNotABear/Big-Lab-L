@@ -1,4 +1,5 @@
 #include "users.h"
+#include "clock.h"
 #include <string.h>
 
 UserSettings users[NUM_USERS] = {
@@ -37,4 +38,15 @@ UserSettings *findUserByPassword(const char *password)
         }
     }
     return NULL;
+}
+
+void checkScheduleEvents(void)
+{
+    if (currentUser == NULL) return;
+
+    if (currentUser->coffeeSchedule.enabled &&
+        currentUser->coffeeSchedule.time.hour == simHour &&
+        currentUser->coffeeSchedule.time.minute == simMinute) {
+        homeState.roomLights |= COFFEE_STATUS;
+    }
 }

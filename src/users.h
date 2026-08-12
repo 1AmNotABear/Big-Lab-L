@@ -51,4 +51,9 @@ extern UserSettings *currentUser;
    (deleted/inactive users are skipped, so they can no longer log in). */
 UserSettings *findUserByPassword(const char *password);
 
+/* Called once per simulated minute tick (see clock_poll() in clock.c).
+   Turns the coffee machine on if currentUser has an enabled coffeeSchedule
+   matching the current simulated time. No automatic turn-off. */
+void checkScheduleEvents(void);
+
 #endif

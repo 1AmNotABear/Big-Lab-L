@@ -2,6 +2,7 @@
 #include "lpc24xx.h"
 #include "stdio.h"
 #include "../../delay.h"
+#include "../../clock.h"
 #include "../../lcd/lcd_grph.h"
 
 #define CS_PIN            0x00100000        //P0.20
@@ -96,6 +97,10 @@ int touch_poll_press(TouchDebounceState *state, int *screen_x, int *screen_y)
 	unsigned char z2;
 	int pressure;
 	int touching;
+
+	// every screen polls via this function, so it's also where the sim
+	// clock gets advanced
+	clock_poll();
 
 	// small settle delay between samples - lets the resistive panel/SPI
 	// reading stabilise

@@ -1,5 +1,13 @@
 #include "lpc24xx.h"
 #include "blinds.h"
+#include "ADC.h"
+#include "temperature.h"
+
+// temp is read_temp()'s 0-99 scale, light is readADC()'s raw 0-1023 value
+#define TEMP_COLD_MAX   15
+#define TEMP_HOT_MIN    24
+#define LIGHT_LOW_MAX   80
+#define LIGHT_HIGH_MIN  150
 
 // Defining the pins for each LED color light
 #define LED1_RED (1 << 16) // P3.16
@@ -37,5 +45,40 @@ void updateBlindState(HomeState *state) {
 
     FIO3CLR = TRICOLOUR_MASK;   // clear all tricolour pins first
     FIO3SET = triColourBits;    // set only the pins that should be on
+}
+
+// energy-saving rule table: cold+bright -> UP, cold+dark -> DOWN,
+// hot+dim -> UP, hot+mid -> MID. Every other combination (comfortable
+// temp range, or a light level with no matching rule) leaves the blind
+// where it is.
+static BlindPosition decideBlindPosition(int temp, unsigned int light, BlindPosition current)
+{
+    if (temp <= TEMP_COLD_MAX) {
+        if (light >= LIGHT_HIGH_MIN) return BLIND_ROLLED_UP;
+        if (light < LIGHT_LOW_MAX) return BLIND_ROLLED_DOWN;
+        return current;
+    }
+
+    if (temp >= TEMP_HOT_MIN) {
+        if (light < LIGHT_LOW_MAX) return BLIND_ROLLED_UP;
+        if (light < LIGHT_HIGH_MIN) return BLIND_MID_WAY;
+        return current;
+    }
+
+    return current;
+}
+
+void checkBlindAutomation(HomeState *state)
+{
+    int temp = read_temp();
+    unsigned int light = readADC();
+
+    if (!state->blind1Override)
+        state->blind1 = decideBlindPosition(temp, light, state->blind1);
+
+    if (!state->blind2Override)
+        state->blind2 = decideBlindPosition(temp, light, state->blind2);
+
+    updateBlindState(state);
 }
 

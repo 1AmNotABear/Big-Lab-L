@@ -35,6 +35,26 @@ static void drawValue(unsigned short x0, unsigned short y0, unsigned short x1, u
     lcd_putString(x0 + 12, y0 + 6, text);
 }
 
+// redraws the current-temperature value box, handling negative readings
+// (read_temp() now returns -10 to 50, unlike the other 0-99 value boxes)
+static void drawCurrentTemp(int value)
+{
+    unsigned char text[4];
+    int i = 0;
+    unsigned int mag = (value < 0) ? (unsigned int)(-value) : (unsigned int)value;
+
+    if (value < 0)
+        text[i++] = '-';
+    text[i++] = (unsigned char)('0' + mag / 10);
+    text[i++] = (unsigned char)('0' + mag % 10);
+    text[i] = '\0';
+
+    lcd_fillRect(172, 54, 208, 74, BACKGROUND_COLOR);
+    lcd_drawRect(172, 54, 208, 74, BORDER_COLOR);
+    lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
+    lcd_putString(178, 60, text);
+}
+
 // yellow when the system is off, gray when on
 static void drawOffButton(void)
 {
@@ -62,7 +82,7 @@ static void drawTemperatureScreen(void)
 
     lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
     lcd_putString(16, 60, (unsigned char *)"Current:");
-    drawValue(172, 54, 208, 74, read_temp());
+    drawCurrentTemp(read_temp());
 
     lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
     lcd_putString(16, 90, (unsigned char *)"Set:");

@@ -38,6 +38,8 @@ typedef enum {
 typedef struct {
     BlindPosition  blind1;
     BlindPosition  blind2;
+    int            blind1Override;  // 0 = automatic, 1 = manual override active
+    int            blind2Override;  // 0 = automatic, 1 = manual override active
     unsigned short roomLights;
     int            tempSetPoint;  // thermostat set point, chosen by the user
     int            tempOff;       // 0 = on, 1 = user pressed OFF
