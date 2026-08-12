@@ -1,5 +1,6 @@
 #include "lpc24xx.h"
 #include "doorbell.h"
+#include "clocks.h"
 
 #define DOORBELL_BTN (1 << 10) // P0.10 for push button corresponding to the doorbell
 
@@ -80,7 +81,7 @@ void udelay(unsigned int delay_in_us) {
 	
 	T0TCR = 0x02; // Reset and disable timer
 	
-	T0PR = (Fpclk / 1000000); // PR = 72M / microsec
+	T0PR = (PCLK_TIMER0 / 1000000) - 1; // PR = 36M / microsec, prescaler divides by (PR + 1)
 
 	T0TCR = 0x1; // sets enable high and reset low
 	
