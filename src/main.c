@@ -7,6 +7,8 @@
 #include "screens/admin_screen.h"
 #include "screens/homescreen.h"
 #include "screens/control_screen.h"
+#include "screens/lights_screen.h"
+#include "screens/temp_screen.h"
 #include "users.h"
 
 void touch_init(void);
@@ -16,6 +18,8 @@ int main(void) {
     AdminResult adminResult;
     HomeResult homeResult;
     ControlResult controlResult;
+    LightsResult lightsResult;
+    TempResult tempResult;
 
     // setup the external memory used by the LCD
     sdramInit();
@@ -71,33 +75,37 @@ int main(void) {
         // regular users land on the homescreen. Polled the same
         // non-blocking way as the login gate above.
         do {
-            homeResult = home_screen_step(currentUser->userId);
-        } while (homeResult == HOME_IN_PROGRESS);
+            do {
+                homeResult = home_screen_step(currentUser->userId);
+            } while (homeResult == HOME_IN_PROGRESS);
 
-        // dedicated LIGHT / BLIND / COFFEE / TEMP screens don't exist yet -
-        // BACK just returns to the pinpad, and the others acknowledge the
-        // choice for now and go back to the pinpad too. Real routing
-        // (using homeResult) comes once those screens are built.
-        if (homeResult != HOME_SELECTED_BACK) {
-            lcd_fontColor(WHITE, NAVY);
-            switch (homeResult) {
-                case HOME_SELECTED_LIGHT:
-                    lcd_putString(75, 105, (unsigned char *)"LIGHT SELECTED");
-                    break;
-                case HOME_SELECTED_BLIND:
-                    lcd_putString(75, 105, (unsigned char *)"BLIND SELECTED");
-                    break;
-                case HOME_SELECTED_COFFEE:
-                    lcd_putString(68, 105, (unsigned char *)"COFFEE SELECTED");
-                    break;
-                case HOME_SELECTED_TEMP:
-                    lcd_putString(78, 105, (unsigned char *)"TEMP SELECTED");
-                    break;
-                default:
-                    break;
+            if (homeResult == HOME_SELECTED_LIGHT) {
+                do {
+                    lightsResult = lights_screen_step();
+                } while (lightsResult == LIGHTS_IN_PROGRESS);
+                // HOME was pressed, loop back and show the home screen again
+            } else if (homeResult == HOME_SELECTED_TEMP) {
+                do {
+                    tempResult = temp_screen_step();
+                } while (tempResult == TEMP_IN_PROGRESS);
+                // HOME was pressed, loop back and show the home screen again
+            } else if (homeResult != HOME_SELECTED_BACK) {
+                // dedicated BLIND / COFFEE screens don't exist yet - just
+                // acknowledge the choice for now and go back to the pinpad.
+                lcd_fontColor(WHITE, NAVY);
+                switch (homeResult) {
+                    case HOME_SELECTED_BLIND:
+                        lcd_putString(75, 105, (unsigned char *)"BLIND SELECTED");
+                        break;
+                    case HOME_SELECTED_COFFEE:
+                        lcd_putString(68, 105, (unsigned char *)"COFFEE SELECTED");
+                        break;
+                    default:
+                        break;
+                }
+                mdelay(1000);
             }
-            mdelay(1000);
-        }
+        } while (homeResult == HOME_SELECTED_LIGHT || homeResult == HOME_SELECTED_TEMP);
     }
 
     return 0;

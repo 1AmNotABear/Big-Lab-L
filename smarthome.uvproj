@@ -404,11 +404,6 @@
               <FilePath>.\src\peripherals.c</FilePath>
             </File>
             <File>
-              <FileName>lights.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\lights.c</FilePath>
-            </File>
-            <File>
               <FileName>blinds.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\blinds.c</FilePath>
@@ -422,6 +417,11 @@
               <FileName>TEMT6000.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\TEMT6000.c</FilePath>
+            </File>
+            <File>
+              <FileName>temperature.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\temperature.c</FilePath>
             </File>
             <File>
               <FileName>doorbell.c</FileName>
@@ -477,6 +477,16 @@
               <FileName>control_screen.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\screens\control_screen.c</FilePath>
+            </File>
+            <File>
+              <FileName>lights_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\screens\lights_screen.c</FilePath>
+            </File>
+            <File>
+              <FileName>temp_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\screens\temp_screen.c</FilePath>
             </File>
           </Files>
         </Group>

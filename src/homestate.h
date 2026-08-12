@@ -11,15 +11,18 @@ typedef enum {
     BLIND_ROLLED_DOWN = 2    // blue
 } BlindPosition;
 
-/* --- Room light bit positions + Smart Plug (within the single roomLights byte) ------
- * Bit  |  Light
- * -----|------------
- *  0   |  Bedroom 1
- *  1   |  Bedroom 2
- *  2   |  Bedroom 3
- *  3   |  Bathroom
- *  4   |  Kitchen
- *  5   |  Living room
+/* --- Room light bit positions + Smart Plug (within the roomLights field) ------
+ * Bit   |  Light
+ * ------|------------
+ *  0    |  Bedroom 1
+ *  1    |  Bedroom 2
+ *  2    |  Bedroom 3
+ *  3    |  Bathroom
+ *  4    |  Kitchen
+ *  5    |  Living room
+ *  6    |  (Smart Plug / coffee, see COFFEE_STATUS)
+ *  7    |  Toilet
+ *  8    |  Deck
  */
 #define LIGHT_BEDROOM1  0x01
 #define LIGHT_BEDROOM2  0x02
@@ -28,12 +31,16 @@ typedef enum {
 #define LIGHT_KITCHEN   0x10
 #define LIGHT_LIVING    0x20
 #define COFFEE_STATUS		0x40
+#define LIGHT_TOILET    0x80
+#define LIGHT_DECK      0x100
 
 /* --- Combined home state ----------------------------------------------- */
 typedef struct {
     BlindPosition  blind1;
     BlindPosition  blind2;
-    unsigned char  roomLights;
+    unsigned short roomLights;
+    int            tempSetPoint;  // thermostat set point, chosen by the user
+    int            tempOff;       // 0 = on, 1 = user pressed OFF
 } HomeState;
 
 /* Declared here, actually defined in homestate.c */
