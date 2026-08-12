@@ -25,16 +25,13 @@ typedef struct {
 } BlindButton;
 
 static const BlindButton blindButtons[6] = {
-    { "OPEN",  BLIND1_OPEN },
-    { "MID", BLIND1_MID },
-    { "CLOSE",   BLIND1_CLOSE },
-    { "OPEN",    BLIND2_OPEN },
-    { "MID",   BLIND2_MID },
-    { "CLOSE",  BLIND2_CLOSE }, 
+    { "OPEN",  state->blind1 == BLIND_ROLLED_DOWN }, 
+    { "MID", state->blind1 == BLIND_MID_WAY },
+    { "CLOSE",   state->blind1 == BLIND_ROLLED_DOWN }, 
+    { "OPEN",    state->blind2 == BLIND_ROLLED_UP },
+    { "MID",   state->blind2 == BLIND_MID_WAY },
+    { "CLOSE",  state->blind2 == BLIND_ROLLED_DOWN }, 
 };
-
-// #define ALL_LIGHTS (LIGHT_LIVING | LIGHT_KITCHEN | LIGHT_BEDROOM1 | LIGHT_BEDROOM2 | \
-                    LIGHT_BEDROOM3 | LIGHT_BATHROOM | LIGHT_TOILET | LIGHT_DECK)
 
 // draws one blind button 
 static void drawBlindAt(int index)
