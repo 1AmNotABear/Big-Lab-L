@@ -1,7 +1,6 @@
 #include "pinpad_screen.h"
 #include "pinpad/touch.h"
 #include "../users.h"
-#include "../delay.h"
 #include "../lcd/lcd_hw.h"
 #include "../lcd/lcd_grph.h"
 #include "../lcd/lcd_cfg.h"
@@ -22,12 +21,6 @@
 #define KEY_CLEAR (-2)
 #define KEY_OK    (-3)
 
-// a touch only counts once its pressure reading has been on the same side
-// of the threshold for this many consecutive samples - filters contact
-// bounce / SPI noise that was causing double/phantom key presses
-#define TOUCH_THRESHOLD   2
-#define DEBOUNCE_SAMPLES  4
-
 void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1, const char *label);
 unsigned int getTextLength(const char *text);
 
@@ -35,10 +28,7 @@ static unsigned char entered_pin[PIN_LENGTH];
 static int counter = 0;
 static int active = 0;
 
-// debounce state
-static int raw_touching = 0;
-static int stable_count = 0;
-static int confirmed_touching = 0;
+static TouchDebounceState touchState;
 
 static int coordinates_to_key(int x, int y)
 {
@@ -106,9 +96,9 @@ static void drawLoginScreen(void)
     // clear the screen and make the background navy
     lcd_fillScreen(BACKGROUND_COLOR);
 
-    // display the USER ID heading
+    // display the PASSWORD heading
     lcd_fontColor(TITLE_COLOR, BACKGROUND_COLOR);
-    lcd_putString(99, 35, (unsigned char *)"USER ID");
+    lcd_putString(96, 35, (unsigned char *)"PASSWORD");
 
     // draw the green line underneath the heading
     lcd_line(74, 49, 166, 49, TITLE_COLOR);
@@ -140,12 +130,6 @@ static void drawLoginScreen(void)
 
 PinpadResult pinpad_screen_step(void)
 {
-    unsigned char x = 0;
-    unsigned char y = 0;
-    unsigned char z1;
-    unsigned char z2;
-    int pressure;
-    int touching;
     int key;
     int screen_x;
     int screen_y;
@@ -158,67 +142,29 @@ PinpadResult pinpad_screen_step(void)
 
     if (!active) {
         clearEntry();
-        raw_touching = 0;
-        stable_count = 0;
-        confirmed_touching = 0;
+        touch_debounce_init(&touchState);
         drawLoginScreen();
         active = 1;
     }
 
-    // small settle delay between samples - lets the resistive panel/SPI
-    // reading stabilise instead of hammering it as fast as possible
-    mdelay(2);
-
-    touch_read_xy((char *)&x, (char *)&y);
-    z1 = touch_read(0xB8);
-    z2 = touch_read(0xC8);
-
-    // raw touch reads are 0-255; scale into screen-pixel space before
-    // testing against button hitboxes
-    screen_x = ((int)x * DISPLAY_WIDTH) / 255;
-    screen_y = ((int)y * DISPLAY_HEIGHT) / 255;
-
-    if (z1 == 0) {
-        pressure = 0;
-    } else {
-        pressure = (int)(400.0f * ((float)x / 256.0f) *
-            (((float)z2 / (float)z1) - 1.0f));
-    }
-
-    touching = (pressure > TOUCH_THRESHOLD) ? 1 : 0;
-
-    // debounce: only accept a state change once it has been consistent
-    // for DEBOUNCE_SAMPLES consecutive reads
-    if (touching == raw_touching) {
-        if (stable_count < DEBOUNCE_SAMPLES)
-            stable_count++;
-    } else {
-        raw_touching = touching;
-        stable_count = 1;
-    }
-
     submit_requested = 0;
 
-    if (stable_count >= DEBOUNCE_SAMPLES && confirmed_touching != raw_touching) {
-        confirmed_touching = raw_touching;
+    if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
+        key = coordinates_to_key(screen_x, screen_y);
 
-        if (confirmed_touching) {
-            key = coordinates_to_key(screen_x, screen_y);
-
-            if (key >= 0 && key <= 9) {
-                if (counter < PIN_LENGTH) {
-                    entered_pin[counter] = (unsigned char)key;
-                    digit_text[0] = (char)('0' + key);
-                    digit_text[1] = '\0';
-                    lcd_fontColor(TEXT_COLOR, ENTRY_COLOR);
-                    lcd_putString((unsigned short)(108 + counter * 6), 89, digit_text);
-                    counter++;
-                }
-            } else if (key == KEY_CLEAR) {
-                clearEntry();
-            } else if (key == KEY_OK) {
-                submit_requested = 1;
+        if (key >= 0 && key <= 9) {
+            if (counter < PIN_LENGTH) {
+                entered_pin[counter] = (unsigned char)key;
+                digit_text[0] = (char)('0' + key);
+                digit_text[1] = '\0';
+                lcd_fontColor(TEXT_COLOR, ENTRY_COLOR);
+                lcd_putString((unsigned short)(108 + counter * 6), 89, digit_text);
+                counter++;
             }
+        } else if (key == KEY_CLEAR) {
+            clearEntry();
+        } else if (key == KEY_OK) {
+            submit_requested = 1;
         }
     }
 
