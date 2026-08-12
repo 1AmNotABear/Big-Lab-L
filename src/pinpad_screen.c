@@ -1,11 +1,11 @@
 #include "pinpad_screen.h"
 #include "pinpad/touch.h"
+#include "users.h"
 #include "delay.h"
 #include "lcd/lcd_hw.h"
 #include "lcd/lcd_grph.h"
 #include "lcd/lcd_cfg.h"
 #include "lcd/sdram.h"
-#include <stdio.h>
 #include <stdlib.h>
 
 #define PIN_LENGTH 4
@@ -17,16 +17,30 @@
 #define BORDER_COLOR      CYAN
 #define ENTRY_COLOR       BLACK
 
+// coordinates_to_key() return values for the non-digit keys
+#define KEY_NONE  (-1)
+#define KEY_CLEAR (-2)
+#define KEY_OK    (-3)
+
+// a touch only counts once its pressure reading has been on the same side
+// of the threshold for this many consecutive samples - filters contact
+// bounce / SPI noise that was causing double/phantom key presses
+#define TOUCH_THRESHOLD   2
+#define DEBOUNCE_SAMPLES  4
+
 void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1, const char *label);
 unsigned int getTextLength(const char *text);
 
-static const unsigned char correct_pin[PIN_LENGTH] = {1, 3, 5, 9};
 static unsigned char entered_pin[PIN_LENGTH];
 static int counter = 0;
-static int previous_touching = 0;
 static int active = 0;
 
-static int coordinates_to_key(unsigned char x, unsigned char y)
+// debounce state
+static int raw_touching = 0;
+static int stable_count = 0;
+static int confirmed_touching = 0;
+
+static int coordinates_to_key(int x, int y)
 {
     int column;
     int row;
@@ -38,7 +52,7 @@ static int coordinates_to_key(unsigned char x, unsigned char y)
     else if (x >= 166 && x <= 222)
         column = 2;
     else
-        return -1;
+        return KEY_NONE;
 
     if (y >= 120 && y <= 156)
         row = 0;
@@ -49,7 +63,7 @@ static int coordinates_to_key(unsigned char x, unsigned char y)
     else if (y >= 245)
         row = 3;
     else
-        return -1;
+        return KEY_NONE;
 
     if (row == 0)
         return column + 1;
@@ -57,20 +71,34 @@ static int coordinates_to_key(unsigned char x, unsigned char y)
         return column + 4;
     if (row == 2)
         return column + 7;
-    if (row == 3 && column == 1)
-        return 0;
+    if (row == 3) {
+        if (column == 0)
+            return KEY_CLEAR;
+        if (column == 1)
+            return 0;
+        if (column == 2)
+            return KEY_OK;
+    }
 
-    return -1;
+    return KEY_NONE;
 }
 
-static int pin_is_correct(void)
+// redraw just the entry box (the black box that shows the digits typed so far)
+static void resetEntryDisplay(void)
+{
+    lcd_fillRect(55, 77, 185, 106, ENTRY_COLOR);
+    lcd_drawRect(55, 77, 185, 106, BORDER_COLOR);
+    lcd_fontColor(TEXT_COLOR, ENTRY_COLOR);
+    lcd_putString(108, 89, (unsigned char *)"____");
+}
+
+static void clearEntry(void)
 {
     int i;
-    for (i = 0; i < PIN_LENGTH; i++) {
-        if (entered_pin[i] != correct_pin[i])
-            return 0;
-    }
-    return 1;
+    for (i = 0; i < PIN_LENGTH; i++)
+        entered_pin[i] = 0;
+    counter = 0;
+    resetEntryDisplay();
 }
 
 static void drawLoginScreen(void)
@@ -89,13 +117,8 @@ static void drawLoginScreen(void)
     lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
     lcd_putString(78, 60, (unsigned char *)"ENTER 4 DIGITS");
 
-    // draw the black box where the entered ID will appear
-    lcd_fillRect(55, 77, 185, 106, ENTRY_COLOR);
-    lcd_drawRect(55, 77, 185, 106, BORDER_COLOR);
-
-    // display four empty spaces for the four-digit ID
-    lcd_fontColor(TEXT_COLOR, ENTRY_COLOR);
-    lcd_putString(108, 89, (unsigned char *)"____");
+    // draw the entry box where the entered PIN will appear
+    resetEntryDisplay();
 
     // first second third fourth keypad rows
     drawButton(16, 120, 72, 156, "1");
@@ -124,23 +147,36 @@ PinpadResult pinpad_screen_step(void)
     int pressure;
     int touching;
     int key;
-    char status_text[50];
+    int screen_x;
+    int screen_y;
     unsigned char digit_text[2];
     int i;
+    int submit_requested;
+    char attempt[PIN_LENGTH + 1];
+    UserSettings *matched;
     PinpadResult result;
 
     if (!active) {
-        for (i = 0; i < PIN_LENGTH; i++)
-            entered_pin[i] = 0;
-        counter = 0;
-        previous_touching = 0;
+        clearEntry();
+        raw_touching = 0;
+        stable_count = 0;
+        confirmed_touching = 0;
         drawLoginScreen();
         active = 1;
     }
 
+    // small settle delay between samples - lets the resistive panel/SPI
+    // reading stabilise instead of hammering it as fast as possible
+    mdelay(2);
+
     touch_read_xy((char *)&x, (char *)&y);
-    z1 = touch_read(0xB0);
-    z2 = touch_read(0xC0);
+    z1 = touch_read(0xB8);
+    z2 = touch_read(0xC8);
+
+    // raw touch reads are 0-255; scale into screen-pixel space before
+    // testing against button hitboxes
+    screen_x = ((int)x * DISPLAY_WIDTH) / 255;
+    screen_y = ((int)y * DISPLAY_HEIGHT) / 255;
 
     if (z1 == 0) {
         pressure = 0;
@@ -149,34 +185,58 @@ PinpadResult pinpad_screen_step(void)
             (((float)z2 / (float)z1) - 1.0f));
     }
 
-    sprintf(status_text, "x:%u y:%u p:%d", x, y, pressure);
-    lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
-    lcd_putString(10, 10, (unsigned char *)status_text);
+    touching = (pressure > TOUCH_THRESHOLD) ? 1 : 0;
 
-    touching = (pressure > 20) ? 1 : 0;
+    // debounce: only accept a state change once it has been consistent
+    // for DEBOUNCE_SAMPLES consecutive reads
+    if (touching == raw_touching) {
+        if (stable_count < DEBOUNCE_SAMPLES)
+            stable_count++;
+    } else {
+        raw_touching = touching;
+        stable_count = 1;
+    }
 
-    if (touching && !previous_touching) {
-        key = coordinates_to_key(x, y);
-        if (key >= 0 && key <= 9) {
-            entered_pin[counter] = (unsigned char)key;
-            digit_text[0] = (char)('0' + key);
-            digit_text[1] = '\0';
-            lcd_fontColor(TEXT_COLOR, ENTRY_COLOR);
-            lcd_putString((unsigned short)(108 + counter * 12), 89, digit_text);
-            counter++;
+    submit_requested = 0;
+
+    if (stable_count >= DEBOUNCE_SAMPLES && confirmed_touching != raw_touching) {
+        confirmed_touching = raw_touching;
+
+        if (confirmed_touching) {
+            key = coordinates_to_key(screen_x, screen_y);
+
+            if (key >= 0 && key <= 9) {
+                if (counter < PIN_LENGTH) {
+                    entered_pin[counter] = (unsigned char)key;
+                    digit_text[0] = (char)('0' + key);
+                    digit_text[1] = '\0';
+                    lcd_fontColor(TEXT_COLOR, ENTRY_COLOR);
+                    lcd_putString((unsigned short)(108 + counter * 6), 89, digit_text);
+                    counter++;
+                }
+            } else if (key == KEY_CLEAR) {
+                clearEntry();
+            } else if (key == KEY_OK) {
+                submit_requested = 1;
+            }
         }
     }
 
-    previous_touching = touching;
+    if (counter >= PIN_LENGTH || submit_requested) {
+        for (i = 0; i < counter; i++)
+            attempt[i] = (char)('0' + entered_pin[i]);
+        attempt[counter] = '\0';
 
-    if (counter >= PIN_LENGTH) {
-        result = pin_is_correct() ? PINPAD_ACCESS_GRANTED : PINPAD_ACCESS_DENIED;
+        matched = findUserByPassword(attempt);
 
         lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
-        if (result == PINPAD_ACCESS_GRANTED) {
+        if (matched != NULL) {
+            currentUser = matched;
             lcd_putString(50, 105, (unsigned char *)"ACCESS GRANTED");
+            result = PINPAD_ACCESS_GRANTED;
         } else {
             lcd_putString(55, 105, (unsigned char *)"ACCESS DENIED ");
+            result = PINPAD_ACCESS_DENIED;
         }
 
         // next call starts a fresh entry
