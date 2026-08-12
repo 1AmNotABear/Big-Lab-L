@@ -24,11 +24,11 @@ int main(void) {
     updateBlindState(&homeState);
     setupADC();
 
+    unsigned int temp_raw = 0;
+    float temperature_c = 0;
+
     while (1) {
-        // idle here forever for now
-        
-        
-        // update blind state based on adc, the numbers are 
+        // update blind state based on adc, the numbers are
         // placeholders based on 10 bit adc.
         adcValue = readADC();
         if (adcValue > 310) {
@@ -40,9 +40,12 @@ int main(void) {
         }
         updateBlindState(&homeState);
 
-        // or we can use the light sensor 
+        // Read the light sensor on AD0.1
         light_lux = light();
-        (void)light_lux;
+
+        // Read the red Potentiometer for temperature modelling;
+        temp_raw = readADCChannel(2);
+        temperature_c = ((float)temp_raw / 1023.0f) * 100.0f - 20.0f;
     }
     return 0;
 }

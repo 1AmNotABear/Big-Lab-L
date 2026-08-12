@@ -1,36 +1,51 @@
-# include "lpc24xx.h"
-# define PINSEL_CLR (3 << 16)   // clears PINSEL AD0[1] (P0.24)
-# define PINSEL_SET (1 << 16)   // sets PINSEL AD0[1] to 01
-# define PINMODE_CLR (3 << 16)  // clears PINMODE for P0.24
-# define PINMODE_SET (2 << 16)  // P0.24: neither pull-up nor pull-down (analog input)
-# define AD0CR_CTRL ((1 << 1) | (3 << 8) | (1 << 21)) // select AD0.1, set clock, power on
-# define PCONP_BIT (1 << 12)
-# define ADC_TIMEOUT 100000     // guard so a dead ADC doesn't hang the caller
+#include "lpc24xx.h"
+
+// choose either ADC0.1 or ADC0.2
+#define PINSEL_CLR ((3 << 16) | (3 << 18))
+#define PINSEL_SET ((1 << 16) | (1 << 18))
+#define PINMODE_CLR ((3 << 16) | (3 << 18))
+#define PINMODE_SET ((2 << 16) | (2 << 18))
+#define AD0CR_BASE (3 << 8)
+#define AD0CR_PWR (1 << 21)
+#define PCONP_BIT (1 << 12)
+#define ADC_TIMEOUT 100000     // guard so a dead ADC doesn't hang the caller
 
 void setupADC(void) {
     PCONP |= PCONP_BIT;     // Power on the ADC before touching its registers
 
-    // Configure the pin as AD0.1 with no pull-up (the default pull-up loads the sensor)
+    // Configure AD0.1 (P0.24) and AD0.2 (P0.25) both
     PINSEL1 &= ~PINSEL_CLR;
     PINSEL1 |= PINSEL_SET;
+
     PINMODE1 &= ~PINMODE_CLR;
     PINMODE1 |= PINMODE_SET;
 
     // Set the ADC to software controlled conversion mode, not burst mode
-    AD0CR = AD0CR_CTRL;
+    AD0CR = AD0CR_BASE;
 }
 
-unsigned int readADC(void) {
+unsigned int readADCChannel(unsigned int channel) {
     unsigned long result;
     unsigned int guard = ADC_TIMEOUT;
+    unsigned int sel;
 
-    // Full write (not |=) so DONE is cleared as the conversion is started
-    AD0CR = AD0CR_CTRL | (1 << 24);   // start conversion on AD0.1 immediately
+    sel = 1u << channel;
+    AD0CR = sel | AD0CR_BASE;
+    // enables operational 
+    AD0CR |= AD0CR_PWR;
+    // start conversion
+    AD0CR |= (1u << 24);
 
-    // Read the register once per poll - reading it clears DONE
-    do {
-        result = AD0DR1;
-    } while (((result & (1UL << 31)) == 0) && --guard);
+    if (channel == 1) {
+        result = AD0DR1; 
+    } else if (channel == 2) {
+        result = AD0DR2; 
+    }
+    while (((result & (1UL << 31)) == 0) && --guard);
+    return (unsigned int)((result >> 6) & 0x3FF);
+}
 
-    return (unsigned int)((result >> 6) & 0x3FF); // Return the converted value
+// for streamlining
+unsigned int readADC(void) {
+    return readADCChannel(1);
 }
