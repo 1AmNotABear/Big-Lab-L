@@ -29,18 +29,20 @@ struct tone chime_data[] = {
 void ringDoorbell(unsigned int duration, int period, int vol);
 void udelay(unsigned int delay_in_us);
 
-// Detects when the doorbell is actually pushed
+// Call once per main loop tick. Plays the chime on the press edge only,
+// so holding the button down doesn't retrigger it.
 void pushDoorbell(HomeState *state) {
 
-    unsigned int btn_pressed = (FIO0PIN & DOORBELL_BTN); // Whether button pushed or not
+    static unsigned int wasPressed = 0;
+    unsigned int isPressed = (FIO0PIN & DOORBELL_BTN) != 0; // Whether button pushed or not
 	int rate = 5200; // Sets speed that the sounds plays
 	int k, i;
 
-    // Setup DAC
-	PINSEL1 &= ~(3 << 20); // Clears bits 21:20
-	PINSEL1 |= (2 << 20); // Sets bits 21:20 to 0b10 (AOUT)
+    if (isPressed && !wasPressed) {
+        // Setup DAC (only needed once, but cheap enough to redo per press)
+        PINSEL1 &= ~(3 << 20); // Clears bits 21:20
+        PINSEL1 |= (2 << 20); // Sets bits 21:20 to 0b10 (AOUT)
 
-    if (btn_pressed != 0) {
         for (k = 0; k < 5; k++) {
 			for (i = 0; i < 6; i++) { // Repeats loop pf chimes 5 times
 				ringDoorbell(rate * chime_data[i].duration, chime_data[i].pitch, chime_data[i].volume); // Rings for 3 seconds with period of 1 second
@@ -48,6 +50,7 @@ void pushDoorbell(HomeState *state) {
         }
     }
 
+    wasPressed = isPressed;
 }
 
 
@@ -75,19 +78,21 @@ void ringDoorbell(unsigned int duration, int period, int vol) {
 }
 
 
-// Delays processor for 'delay_in_us' number of microseconds
+// Delays processor for 'delay_in_us' number of microseconds.
+// Uses Timer1, not Timer0 - Timer0 is clock.c's free-running sim-clock
+// counter, and must never be reset/stopped.
 void udelay(unsigned int delay_in_us) {
 	if (delay_in_us == 0) return;
-	
-	T0TCR = 0x02; // Reset and disable timer
-	
-	T0PR = (PCLK_TIMER0 / 1000000) - 1; // PR = 36M / microsec, prescaler divides by (PR + 1)
 
-	T0TCR = 0x1; // sets enable high and reset low
-	
-	while (T0TC < delay_in_us) {
+	T1TCR = 0x02; // Reset and disable timer
+
+	T1PR = (PCLK_TIMER1 / 1000000) - 1; // PR = 36M / microsec, prescaler divides by (PR + 1)
+
+	T1TCR = 0x1; // sets enable high and reset low
+
+	while (T1TC < delay_in_us) {
 		// hold
 	}
-	
-	T0TCR = 0x00; // disable timer as is
+
+	T1TCR = 0x00; // disable timer as is
 }

@@ -4,6 +4,7 @@
 #include "users.h"
 #include "homestate.h"
 #include "blinds.h"
+#include "doorbell.h"
 
 // 1 real second = 1 sim minute (60x speedup)
 #define MS_PER_SIM_MINUTE 1000
@@ -25,6 +26,10 @@ void clock_init(void) {
 
 void clock_poll(void) {
     unsigned long now = T0TC;
+
+    // Polled every loop tick regardless of which screen is active, so the
+    // doorbell works no matter what's on screen.
+    pushDoorbell(&homeState);
 
     while (now - lastTick >= MS_PER_SIM_MINUTE) {
         lastTick += MS_PER_SIM_MINUTE;
