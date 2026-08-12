@@ -6,6 +6,7 @@
 #include "screens/pinpad_screen.h"
 #include "screens/admin_screen.h"
 #include "screens/homescreen.h"
+#include "screens/control_screen.h"
 #include "users.h"
 
 void touch_init(void);
@@ -14,6 +15,7 @@ int main(void) {
     PinpadResult loginResult;
     AdminResult adminResult;
     HomeResult homeResult;
+    ControlResult controlResult;
 
     // setup the external memory used by the LCD
     sdramInit();
@@ -46,20 +48,23 @@ int main(void) {
             // user profile) right after login. Polled the same non-blocking
             // way as the login gate above.
             do {
-                adminResult = admin_screen_step();
-            } while (adminResult == ADMIN_IN_PROGRESS);
+                do {
+                    adminResult = admin_screen_step();
+                } while (adminResult == ADMIN_IN_PROGRESS);
 
-            // dedicated CONTROL / USER PROFILE screens don't exist yet - just
-            // acknowledge the choice for now and go back to the pinpad.
-            // Real routing (using adminResult) comes once those screens
-            // are built.
-            lcd_fontColor(WHITE, NAVY);
-            if (adminResult == ADMIN_SELECTED_CONTROL) {
-                lcd_putString(70, 105, (unsigned char *)"CONTROL SELECTED");
-            } else {
-                lcd_putString(60, 105, (unsigned char *)"PROFILE SELECTED");
-            }
-            mdelay(1000);
+                if (adminResult == ADMIN_SELECTED_CONTROL) {
+                    do {
+                        controlResult = control_screen_step();
+                    } while (controlResult == CONTROL_IN_PROGRESS);
+                    // HOME was pressed, loop back and show the admin screen again
+                } else {
+                    // dedicated USER PROFILE screen doesn't exist yet
+                    lcd_fontColor(WHITE, NAVY);
+                    lcd_putString(60, 105, (unsigned char *)"PROFILE SELECTED");
+                    mdelay(1000);
+                }
+            } while (adminResult == ADMIN_SELECTED_CONTROL);
+
             continue;
         }
 

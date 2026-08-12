@@ -473,6 +473,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\screens\homescreen.c</FilePath>
             </File>
+            <File>
+              <FileName>control_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\screens\control_screen.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
