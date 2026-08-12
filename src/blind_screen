@@ -1,0 +1,149 @@
+#include "blind_screen.h"
+#include "pinpad/touch.h"
+#include "../homestate.h"
+#include "../lcd/lcd_hw.h"
+#include "../lcd/lcd_grph.h"
+#include "../lcd/lcd_cfg.h"
+#include "../lcd/sdram.h"
+
+#define BACKGROUND_COLOR  NAVY
+#define TITLE_COLOR       GREEN
+#define TEXT_COLOR        WHITE
+#define BUTTON_COLOR      DARK_GRAY
+#define BORDER_COLOR      CYAN
+
+void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1, const char *label);
+unsigned int getTextLength(const char *text);
+
+static int active = 0;
+
+static TouchDebounceState touchState;
+
+typedef struct {
+    const char *label;
+    unsigned short bit;
+} BlindButton;
+
+static const BlindButton blindButtons[6] = {
+    { "OPEN",  BLIND1_OPEN },
+    { "MID", BLIND1_MID },
+    { "CLOSE",   BLIND1_CLOSE },
+    { "OPEN",    BLIND2_OPEN },
+    { "MID",   BLIND2_MID },
+    { "CLOSE",  BLIND2_CLOSE }, 
+};
+
+// #define ALL_LIGHTS (LIGHT_LIVING | LIGHT_KITCHEN | LIGHT_BEDROOM1 | LIGHT_BEDROOM2 | \
+                    LIGHT_BEDROOM3 | LIGHT_BATHROOM | LIGHT_TOILET | LIGHT_DECK)
+
+// draws one blind button 
+static void drawBlindAt(int index)
+{
+    int row = index / 2;
+    int col = index % 2;
+    unsigned short x0 = (col == 0) ? 16 : 122;
+    unsigned short x1 = (col == 0) ? 118 : 224;
+    unsigned short y0 = (unsigned short)(70 + row * 46);
+    unsigned short y1 = (unsigned short)(y0 + 40);
+    unsigned int labelLength = getTextLength(blindButtons[index].label);
+    unsigned short textX = (unsigned short)(x0 + (((x1 - x0 + 1) - labelLength * 6U) / 2U));
+    unsigned short textY = (unsigned short)(y0 + (((y1 - y0 + 1) - 8U) / 2U));
+
+    lcd_fillRect(x0, y0, x1, y1, BUTTON_COLOR);
+    lcd_drawRect(x0, y0, x1, y1, BORDER_COLOR);
+    lcd_fontColor(TEXT_COLOR, BLIND_COLOR);
+    lcd_putString(textX, textY, (unsigned char *)blindButtons[index].label);
+}
+
+static void drawBlindsScreen(void)
+{
+    int i;
+
+    lcd_fillScreen(BACKGROUND_COLOR);
+
+    lcd_fontColor(TITLE_COLOR, BACKGROUND_COLOR);
+    lcd_putString(102, 35, (unsigned char *)"BLINDS");
+    lcd_line(74, 49, 166, 49, TITLE_COLOR);
+
+    drawButton(8, 8, 60, 30, "HOME");
+
+    // Blind 1 label
+    lcd_fontColor(TITLE_COLOR, BACKGROUND_COLOR);
+    lcd_putString(30, 56, (unsigned char *)"Blind 1");
+    lcd_line(74, 49, 166, 49, TEXT_COLOR);
+
+    // Blind 2 label
+    lcd_fontColor(TITLE_COLOR, BACKGROUND_COLOR);
+    lcd_putString(136, 56, (unsigned char *)"Blind 2");
+    lcd_line(74, 49, 166, 49, TEXT_COLOR);
+
+    for (i = 0; i < 6; i++)
+        drawBlindAt(i);
+
+    drawButton(16, 240, 118, 280, "SCHEDULE");
+    drawButton(122, 240, 224, 280, "SET SCHEDULE");
+
+}
+
+// -1 = nothing, 0 = HOME, 1-6 = blind buttons
+static int coordinates_to_option(int x, int y)
+{
+    int col;
+    int row;
+
+    if (x >= 8 && x <= 60 && y >= 8 && y <= 30)
+        return 0;
+
+    if (x >= 16 && x <= 118)
+        col = 0;
+    else if (x >= 122 && x <= 224)
+        col = 1;
+    else
+        return -1;
+
+    if (y < 70 || y > 280)
+        return -1;
+
+    row = (y - 70) / 46;
+    if (row > 4 || y > 70 + row * 46 + 40)
+        return -1;
+
+    return (row * 2 + col) + 1;
+}
+
+BlindsResult blinds_screen_step(void)
+{
+    int screen_x;
+    int screen_y;
+    int option;
+    int i;
+    BlindsResult result;
+
+    if (!active) {
+        touch_debounce_init(&touchState);
+        drawBlindsScreen();
+        active = 1;
+    }
+
+    result = BLINDS_IN_PROGRESS;
+
+    if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
+        option = coordinates_to_option(screen_x, screen_y);
+
+        if (option == 0) {
+            result = BLINDS_SELECTED_HOME;
+        } else if (option >= 1 && option <= 3) {
+            homeState.blind1 ^= blindButtons[option - 1].bit;
+            drawBlindAt(option - 1);
+        } else if (option >= 4 && option <= 6) {
+            homeState.blind2 ^= blindButtons[option - 1].bit;
+            drawBlindAt(option - 1);
+        } 
+    }
+
+    if (result != BLINDS_IN_PROGRESS) {
+        active = 0;
+    }
+
+    return result;
+}
