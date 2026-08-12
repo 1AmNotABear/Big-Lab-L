@@ -455,6 +455,16 @@
               <FileType>1</FileType>
               <FilePath>.\src\delay.c</FilePath>
             </File>
+            <File>
+              <FileName>coffee_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\coffee_screen.c</FilePath>
+            </File>
+            <File>
+              <FileName>timesetting.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\timesetting.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

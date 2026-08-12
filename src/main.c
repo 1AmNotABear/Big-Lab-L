@@ -1,49 +1,31 @@
-#include "lpc24xx.h"
-#include "homestate.h"
-#include "lights.h"
-#include "blinds.h"
-#include "TEMT6000.h"
-#include "ADC.h"
+#include "delay.h"
+#include "lcd/lcd_hw.h"
+#include "lcd/lcd_grph.h"
+#include "lcd/lcd_cfg.h"
+#include "lcd/sdram.h"
 
-void setDirections(void);
-void enablePeripherals(void);
+void drawCoffeeScreen(void);
+void time_ui_draw(void);
 
 int main(void) {
 
-    unsigned int adcValue;
-    int light_lux;
+    // setup the external memory used by the LCD
+    sdramInit();
 
-    setDirections();
-    enablePeripherals();
+    // setup the LCD using the supplied configuration
+    lcdInit(&lcd_config);
 
-    homeState.roomLights |= LIGHT_BEDROOM2;
-    updateLightState(&homeState);
-	
-		homeState.blind1 = BLIND_MID_WAY;    // blind 1 half up  -> LED1 green
-    homeState.blind2 = BLIND_ROLLED_UP;  // blind 2 full up  -> LED2 red
-    updateBlindState(&homeState);
-    setupADC();
+    // turn the LCD screen on
+    lcdTurnOn();
 
     while (1) {
-        // idle here forever for now
-        
-        
-        // update blind state based on adc, the numbers are 
-        // placeholders based on 10 bit adc.
-        adcValue = readADC();
-        if (adcValue > 310) {
-            homeState.blind1 = BLIND_ROLLED_UP;
-        } else if (adcValue > 150) {
-            homeState.blind1 = BLIND_MID_WAY;
-        } else {
-            homeState.blind1 = BLIND_ROLLED_DOWN;
-        }
-        updateBlindState(&homeState);
+        drawCoffeeScreen();
+        mdelay(1000);
 
-        // or we can use the light sensor 
-        light_lux = light();
-        (void)light_lux;
+        time_ui_draw();
+        mdelay(1000);
     }
+
     return 0;
 }
 

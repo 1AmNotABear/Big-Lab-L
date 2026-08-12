@@ -1,4 +1,3 @@
-#include "touch.h"
 #include "delay.h"
 #include "lpc24xx.h"   
 #include "lcd/lcd_hw.h"
@@ -67,31 +66,9 @@ static int time_saved = 0;
 
 void time_ui_init(void);
 void time_ui_draw(void);
-void time_ui_handle_touch(unsigned int raw_x, unsigned int raw_y);
 int time_ui_get_hour(void);
 int time_ui_get_minute(void);
 
-
-//Check whether a point is inside a rectangular button
-static int point_inside(int x, int y, int x1, int y1, int x2, int y2) {
-    if (x < x1) {
-        return 0;
-    }
-
-    if (x > x2) {
-        return 0;
-    }
-
-    if (y < y1) {
-        return 0;
-    }
-
-    if (y > y2) {
-        return 0;
-    }
-
-    return 1;
-}
 
 //Draw a filled rectangular button
 static void draw_button(
@@ -133,26 +110,6 @@ static void draw_time_value(
     lcd_drawRect(x1, y1, x2, y2, BLACK);
     lcd_fontColor(VALUE_TEXT, VALUE_BACKGROUND);
     lcd_putString(text_x, text_y, text);
-}
-
-
-int main(void) {
-    char x = 0;
-    char y = 0;
-
-    //Initialise the LCD and display the time-setting interface
-    time_ui_init();
-
-    //Initialise the touchscreen
-    touch_init();
-
-    while (1) {
-        touch_read_xy(&x, &y);
-
-        time_ui_handle_touch((unsigned char)x, (unsigned char)y);
-
-        mdelay(250);
-    }
 }
 
 
@@ -260,79 +217,6 @@ void time_ui_draw(void) {
     if (time_saved) {
         lcd_fontColor(SAVED_COLOUR, PAGE_BACKGROUND);
         lcd_putString(96, 295, (unsigned char *)"SAVED");
-    }
-}
-
-//Process a touchscreen coordinate
-void time_ui_handle_touch(unsigned int raw_x, unsigned int raw_y) {
-    int screen_x;
-    int screen_y;
-
-    if (raw_x > 255 || raw_y > 255) {
-        return;
-    }
-
-    //Convert touchscreen coordinates into screen coordinates
-    screen_x = (int)(raw_x * DISPLAY_WIDTH / 255);
-    screen_y = (int)(raw_y * DISPLAY_HEIGHT / 255);
-
-    //Hour minus button
-    if (point_inside(screen_x, screen_y, HOUR_MINUS_X1, HOUR_MINUS_Y1, HOUR_MINUS_X2, HOUR_MINUS_Y2)) {
-        selected_hour--;
-
-        if (selected_hour < 0) {
-            selected_hour = 23;
-        }
-
-        time_saved = 0;
-        time_ui_draw();
-        return;
-    }
-
-    //Hour plus button
-    if (point_inside(screen_x, screen_y, HOUR_PLUS_X1, HOUR_PLUS_Y1, HOUR_PLUS_X2, HOUR_PLUS_Y2)) {
-        selected_hour++;
-
-        if (selected_hour > 23) {
-            selected_hour = 0;
-        }
-
-        time_saved = 0;
-        time_ui_draw();
-        return;
-    }
-
-    //Minute minus button
-    if (point_inside(screen_x, screen_y, MINUTE_MINUS_X1, MINUTE_MINUS_Y1, MINUTE_MINUS_X2, MINUTE_MINUS_Y2)) {
-        selected_minute--;
-
-        if (selected_minute < 0) {
-            selected_minute = 59;
-        }
-
-        time_saved = 0;
-        time_ui_draw();
-        return;
-    }
-
-    //Minute plus button
-    if (point_inside(screen_x, screen_y, MINUTE_PLUS_X1, MINUTE_PLUS_Y1, MINUTE_PLUS_X2, MINUTE_PLUS_Y2)) {
-        selected_minute++;
-
-        if (selected_minute > 59) {
-            selected_minute = 0;
-        }
-
-        time_saved = 0;
-        time_ui_draw();
-        return;
-    }
-
-    //SET button
-    if (point_inside(screen_x, screen_y, SET_BUTTON_X1, SET_BUTTON_Y1, SET_BUTTON_X2, SET_BUTTON_Y2)) {
-        time_saved = 1;
-        time_ui_draw();
-        return;
     }
 }
 
