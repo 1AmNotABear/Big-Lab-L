@@ -449,6 +449,11 @@
               <FilePath>.\src\timesetting.c</FilePath>
             </File>
             <File>
+              <FileName>users.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\users.c</FilePath>
+            </File>
+            <File>
               <FileName>pinpad_screen.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\pinpad_screen.c</FilePath>
@@ -457,6 +462,11 @@
               <FileName>touch.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\pinpad\touch.c</FilePath>
+            </File>
+            <File>
+              <FileName>admin_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\admin_screen.c</FilePath>
             </File>
           </Files>
         </Group>
