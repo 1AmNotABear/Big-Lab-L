@@ -1,10 +1,10 @@
 #include "admin_screen.h"
 #include "pinpad/touch.h"
-#include "delay.h"
-#include "lcd/lcd_hw.h"
-#include "lcd/lcd_grph.h"
-#include "lcd/lcd_cfg.h"
-#include "lcd/sdram.h"
+#include "../delay.h"
+#include "../lcd/lcd_hw.h"
+#include "../lcd/lcd_grph.h"
+#include "../lcd/lcd_cfg.h"
+#include "../lcd/sdram.h"
 
 #define BACKGROUND_COLOR  NAVY
 #define TITLE_COLOR       GREEN

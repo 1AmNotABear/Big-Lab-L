@@ -1,11 +1,11 @@
 #include "pinpad_screen.h"
 #include "pinpad/touch.h"
-#include "users.h"
-#include "delay.h"
-#include "lcd/lcd_hw.h"
-#include "lcd/lcd_grph.h"
-#include "lcd/lcd_cfg.h"
-#include "lcd/sdram.h"
+#include "../users.h"
+#include "../delay.h"
+#include "../lcd/lcd_hw.h"
+#include "../lcd/lcd_grph.h"
+#include "../lcd/lcd_cfg.h"
+#include "../lcd/sdram.h"
 #include <stdlib.h>
 
 #define PIN_LENGTH 4

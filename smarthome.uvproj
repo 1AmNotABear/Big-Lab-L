@@ -456,17 +456,22 @@
             <File>
               <FileName>pinpad_screen.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\pinpad_screen.c</FilePath>
+              <FilePath>.\src\screens\pinpad_screen.c</FilePath>
             </File>
             <File>
               <FileName>touch.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\pinpad\touch.c</FilePath>
+              <FilePath>.\src\screens\pinpad\touch.c</FilePath>
             </File>
             <File>
               <FileName>admin_screen.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\admin_screen.c</FilePath>
+              <FilePath>.\src\screens\admin_screen.c</FilePath>
+            </File>
+            <File>
+              <FileName>homescreen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\screens\homescreen.c</FilePath>
             </File>
           </Files>
         </Group>
