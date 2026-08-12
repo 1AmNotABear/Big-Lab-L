@@ -28,6 +28,7 @@ typedef struct {
     char userId[5];    // 4 digits + null terminator
     char password[5];  // 4 digits + null terminator
     int  isAdmin;       // 0 = regular user, 1 = admin
+    int  active;         // 0 = deleted (hidden from profiles list, can't log in), 1 = normal
 
     BlindScheduleEntry blindSchedule[MAX_BLIND_ACTIONS];
     int                blindActionCount;  // how many of the 10 slots are used
@@ -46,7 +47,8 @@ extern UserSettings users[NUM_USERS];
    screen last logged in. NULL until someone logs in. */
 extern UserSettings *currentUser;
 
-/* Returns a pointer to the user whose password matches, or NULL if none match. */
+/* Returns a pointer to the user whose password matches, or NULL if none match
+   (deleted/inactive users are skipped, so they can no longer log in). */
 UserSettings *findUserByPassword(const char *password);
 
 #endif

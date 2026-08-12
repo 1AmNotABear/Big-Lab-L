@@ -493,6 +493,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\screens\blind_screen.c</FilePath>
             </File>
+            <File>
+              <FileName>profiles_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\screens\profiles_screen.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
