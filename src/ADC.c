@@ -34,3 +34,34 @@ unsigned int readADC(void) {
 
     return (unsigned int)((result >> 6) & 0x3FF); // Return the converted value
 }
+
+# define TEMP_PINSEL_CLR (3 << 18)   // clears PINSEL AD0[2] (P0.25)
+# define TEMP_PINSEL_SET (1 << 18)   // sets PINSEL AD0[2] to 01
+# define TEMP_PINMODE_CLR (3 << 18)  // clears PINMODE for P0.25
+# define TEMP_PINMODE_SET (2 << 18)  // P0.25: neither pull-up nor pull-down (analog input)
+# define AD0CR_CTRL2 ((1 << 2) | (3 << 8) | (1 << 21)) // select AD0.2, set clock, power on
+
+void setupTempADC(void) {
+    PCONP |= PCONP_BIT;     // Power on the ADC before touching its registers
+
+    // Configure the pin as AD0.2 (the "Analog Input" pot, R42)
+    PINSEL1 &= ~TEMP_PINSEL_CLR;
+    PINSEL1 |= TEMP_PINSEL_SET;
+    PINMODE1 &= ~TEMP_PINMODE_CLR;
+    PINMODE1 |= TEMP_PINMODE_SET;
+
+    AD0CR = AD0CR_CTRL2;
+}
+
+unsigned int readTempADC(void) {
+    unsigned long result;
+    unsigned int guard = ADC_TIMEOUT;
+
+    AD0CR = AD0CR_CTRL2 | (1 << 24);   // start conversion on AD0.2 immediately
+
+    do {
+        result = AD0DR2;
+    } while (((result & (1UL << 31)) == 0) && --guard);
+
+    return (unsigned int)((result >> 6) & 0x3FF); // Return the converted value
+}

@@ -9,7 +9,9 @@
 #include "screens/control_screen.h"
 #include "screens/lights_screen.h"
 #include "screens/temp_screen.h"
+#include "screens/blind_screen.h"
 #include "users.h"
+#include "ADC.h"
 
 void touch_init(void);
 
@@ -20,6 +22,7 @@ int main(void) {
     ControlResult controlResult;
     LightsResult lightsResult;
     TempResult tempResult;
+    BlindResult blindResult;
 
     // setup the external memory used by the LCD
     sdramInit();
@@ -32,6 +35,9 @@ int main(void) {
 
     // initialise the touch controller
     touch_init();
+
+    // initialise the ADC channel used for read_temp()
+    setupTempADC();
 
     while (1) {
         // login gate: poll once per lap until it resolves. This is where
@@ -89,14 +95,16 @@ int main(void) {
                     tempResult = temp_screen_step();
                 } while (tempResult == TEMP_IN_PROGRESS);
                 // HOME was pressed, loop back and show the home screen again
+            } else if (homeResult == HOME_SELECTED_BLIND) {
+                do {
+                    blindResult = blind_screen_step();
+                } while (blindResult == BLIND_IN_PROGRESS);
+                // HOME was pressed, loop back and show the home screen again
             } else if (homeResult != HOME_SELECTED_BACK) {
-                // dedicated BLIND / COFFEE screens don't exist yet - just
+                // dedicated COFFEE screen doesn't exist yet - just
                 // acknowledge the choice for now and go back to the pinpad.
                 lcd_fontColor(WHITE, NAVY);
                 switch (homeResult) {
-                    case HOME_SELECTED_BLIND:
-                        lcd_putString(75, 105, (unsigned char *)"BLIND SELECTED");
-                        break;
                     case HOME_SELECTED_COFFEE:
                         lcd_putString(68, 105, (unsigned char *)"COFFEE SELECTED");
                         break;
@@ -105,7 +113,8 @@ int main(void) {
                 }
                 mdelay(1000);
             }
-        } while (homeResult == HOME_SELECTED_LIGHT || homeResult == HOME_SELECTED_TEMP);
+        } while (homeResult == HOME_SELECTED_LIGHT || homeResult == HOME_SELECTED_TEMP ||
+                 homeResult == HOME_SELECTED_BLIND);
     }
 
     return 0;

@@ -488,6 +488,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\screens\temp_screen.c</FilePath>
             </File>
+            <File>
+              <FileName>blind_screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\screens\blind_screen.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

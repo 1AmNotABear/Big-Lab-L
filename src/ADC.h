@@ -6,4 +6,8 @@
 void setupADC(void);
 unsigned int readADC(void);
 
+// AD0.2 / P0.25 - the "Analog Input" pot (R42) on the QVGA base board
+void setupTempADC(void);
+unsigned int readTempADC(void);
+
 #endif
