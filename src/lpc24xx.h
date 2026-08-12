@@ -16,7 +16,7 @@
 
 //Clock Defines
 #define Fcclk	72000000
-#define Fpclk	(Fcclk / 2)
+#define Fpclk	Fcclk
 
 /* Vectored Interrupt Controller (VIC) */
 #define VIC_BASE_ADDR	0xFFFFF000
