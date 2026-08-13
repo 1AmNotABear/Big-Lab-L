@@ -1,8 +1,7 @@
 #ifndef HOMESTATE_H
 #define HOMESTATE_H
 
-/* --- Blind position -------------------------------------------------
- * Matches the tricolour LED mapping in the project brief:
+/* --- Blind position
  *   red = rolled up, green = mid-way, blue = rolled down
  */
 typedef enum {
@@ -11,19 +10,9 @@ typedef enum {
     BLIND_ROLLED_DOWN = 2    // blue
 } BlindPosition;
 
-/* --- Room light bit positions + Smart Plug (within the roomLights field) ------
- * Bit   |  Light
- * ------|------------
- *  0    |  Bedroom 1
- *  1    |  Bedroom 2
- *  2    |  Bedroom 3
- *  3    |  Bathroom
- *  4    |  Kitchen
- *  5    |  Living room
- *  6    |  (Smart Plug / coffee, see COFFEE_STATUS)
- *  7    |  Toilet
- *  8    |  Deck
- */
+/* roomLights bits: 0=Bedroom1, 1=Bedroom2, 2=Bedroom3, 3=Bathroom, 4=Kitchen,
+ * 5=Living room, 6=Smart Plug/Coffee (see COFFEE_STATUS),
+ * 7=Toilet, 8=Deck. */
 #define LIGHT_BEDROOM1  0x01
 #define LIGHT_BEDROOM2  0x02
 #define LIGHT_BEDROOM3  0x04
