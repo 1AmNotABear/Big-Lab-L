@@ -45,7 +45,7 @@ void pushDoorbell(HomeState *state) {
 
         for (k = 0; k < 5; k++) {
 			for (i = 0; i < 6; i++) { // Repeats loop pf chimes 5 times
-				ringDoorbell(rate * chime_data[i].duration, chime_data[i].pitch, chime_data[i].volume); // Rings for 3 seconds with period of 1 second
+				ringDoorbell(rate * chime_data[i].duration, chime_data[i].pitch, chime_data[i].volume);
 			}
         }
     }

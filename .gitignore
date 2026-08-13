@@ -4,3 +4,6 @@ output/*
 *.dep
 *_uvopt.bak
 *_uvproj.bak
+*.bak
+.DS_Store
+build-plan.html

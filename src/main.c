@@ -106,12 +106,9 @@ int main(void) {
     checkBlindAutomation(&homeState);
 
     while (1) {
-        // login gate: poll once per lap until it resolves. This is where
-        // other non-blocking work (doorbell, sensors, ...) would later be
-        // polled too, since pinpad_screen_step() no longer blocks. A denied
-        // attempt shows the message briefly then automatically resets for
-        // another try; only a correct password breaks out to the rest of
-        // the app.
+        // login gate: poll once per lap until it resolves. A denied attempt
+        // shows the message briefly then automatically resets for another
+        // try; only a correct password breaks out to the rest of the app.
         do {
             loginResult = pinpad_screen_step();
             if (loginResult != PINPAD_IN_PROGRESS) {

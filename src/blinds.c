@@ -3,7 +3,7 @@
 #include "ADC.h"
 #include "temperature.h"
 
-// temp is read_temp()'s 0-99 scale, light is readADC()'s raw 0-1023 value
+// light is readADC()'s raw 0-1023 value
 #define TEMP_COLD_MAX   15
 #define TEMP_HOT_MIN    24
 #define LIGHT_LOW_MAX   80

@@ -26,7 +26,6 @@ unsigned char touch_read(unsigned char command);
 
 void touch_init(void)
 {
-	//Implemented exactly from lab 6 
 	//Remember to setup CS_TP as a GPIO output
 	PINSEL0 &= ~SCLK;
 	PINSEL0 |= SCLK;
@@ -43,7 +42,6 @@ void touch_init(void)
 
 void touch_read_xy(char *x, char *y)
 {
-	//Implemented exactly from lab 6 
 	//Read X co-ordinate from the touch screen controller
 	*x = touch_read(0xD8);
 	//Read Y co-ordinate from the touch screen controller
@@ -53,7 +51,6 @@ void touch_read_xy(char *x, char *y)
 unsigned char touch_read(unsigned char command)
 {
 	unsigned short result;
-	//Implemented exactly from lab 6 
 
 	//Set CS_TP pin low to begin SPI transmission
 	

@@ -419,11 +419,6 @@
               <FilePath>.\src\ADC.c</FilePath>
             </File>
             <File>
-              <FileName>TEMT6000.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\TEMT6000.c</FilePath>
-            </File>
-            <File>
               <FileName>temperature.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\temperature.c</FilePath>
@@ -434,11 +429,6 @@
               <FilePath>.\src\doorbell.c</FilePath>
             </File>
             <File>
-              <FileName>smartplug.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\smartplug.c</FilePath>
-            </File>
-            <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\delay.c</FilePath>
@@ -447,11 +437,6 @@
               <FileName>coffee_screen.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\coffee_screen.c</FilePath>
-            </File>
-            <File>
-              <FileName>timesetting.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\timesetting.c</FilePath>
             </File>
             <File>
               <FileName>users.c</FileName>

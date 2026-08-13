@@ -36,7 +36,7 @@ static void drawValue(unsigned short x0, unsigned short y0, unsigned short x1, u
 }
 
 // redraws the current-temperature value box, handling negative readings
-// (read_temp() now returns -10 to 50, unlike the other 0-99 value boxes)
+// (read_temp() returns -10 to 50, unlike the other 0-99 value boxes)
 static void drawCurrentTemp(int value)
 {
     unsigned char text[4];
