@@ -33,19 +33,19 @@ Once logged in you are greeted with the user's home screen (the user has id 0001
 
 You have 4 main options:
 
-Light: Go into a lights screen to control home lights. The screen uses touchscreen input to change the lights and displays what home lights are via the button colour with yellow buttons meaning the light on, grey off.
+Light: Go into the lights screen to control home lights. The screen uses touchscreen input to change the lights and is also used to display what home lights are on - symbolised with the buttons filled with the colour yellow.
 
-Blind: Go in to manually override blind positions. Yellow buttons mean the blind is in that position, if override is set the smart blind algorithm outlined later in this readme is disabled. Only when the user deselects override will the smart algorithm go back on.
+Blind: Go in to manually override blind positions. Yellow buttons mean the blind is in that position. If override is set the smart blind algorithm outlined later in this readme is disabled. Only when the user deselects override will the smart algorithm go back on.
 
 Coffee: Go in to turn on or off the coffee machine and set the coffee schedule (details for that screen given a bit later in the readme). Coffee machine is on when the coffee button is yellow.
 
-Temp: A screen to set the AC temp of the property (note this does not impact the actual state in any way). It also shows the current temp which you can use the red potentiometer to change this value (note when you move the potentiometer the screen will not refresh this value, you will need to return to home using the home button then click the ‘TEMP’ button to return to the temp screen to see the refreshed value). The temp screen also displays the admin's max high and low setting, where a user cannot exceed these bounds.
+Temp: A screen to set the AC temp of the property (note this set temp does not impact the actual state in any way). It also shows the current temp which you can use the red potentiometer to change this value (note when you move the potentiometer the screen will not refresh this value, you will need to return to home using the home button then click the ‘TEMP’ button to return to the temp screen to see the refreshed value). The temp screen also displays the admin's max high and low setting, where a user cannot exceed these bounds.
 
 All settings and home state like lights, blinds and coffee machine are retained when the user backs out of the screen. When they go back into the screen you will find their settings are retained as they were before.
 
 Note on the coffee schedule:
 
-The coffee schedule screen is used to set when the coffee machine smart plug turns on automatically via a timer being polled. 1 second in the real world equates to 1 hour in the simulation. The current time is displayed on the bottom of the coffee screen so you can use this to set an appropriate scheduled time. Note when the scheduled time hits, if you are on the coffee screen it will not automatically refresh, you will need to go back out and then back in to see the coffee machine turned on (depicted as a yellow button for on, grey for off).
+The coffee schedule screen is used to set when the coffee machine smart plug turns on automatically via a timer being polled. 1 second in the real world equates to 1 hour in the simulation. The current time is displayed on the bottom of the coffee screen so you can use this to set an appropriate scheduled time. The scheduler is used to automatically turn the smart plug on, but does not offer the ability to schedule turn off times. Note when the scheduled time hits, if you are on the coffee screen it will not automatically refresh, you will need to go back out and then back in to see the coffee machine turned on (depicted as a yellow button for on, grey for off).
 
 Try out different screens yourself to see how it works.
 
@@ -87,11 +87,11 @@ Then to save energy in the home the following smart blinds algorithm is adopted:
 
 A dim and cold room makes the blinds go down (closed/blue).
 	Easiest way to test is just turn potentiometer way down (anticlockwise) and then cover the light sensor.
-A bright and cold room means the blinds are up (open - red). 
-	Easiest way to test is to have the user set some non open blind state, turn potentiometer way down. Deselect 	override,  (nothing happens) then shine flashlight over light sensor, blinds will go red as conditions now met.
-A dim and hot room means the blinds are up (open - red). 
+A bright and cold room means the blinds go up (open - red). 
+	Easiest way to test is to have the user set some non open blind state, turn potentiometer way down. Deselect override,  (nothing happens) then shine flashlight over light sensor, blinds will go red as conditions now met.
+A dim and hot room means the blinds go up (open - red). 
 	Same as the bright and cold test but do for dim and hot.
-A mid and hot room means the blinds are remaining in the mid position (mid - green). 
+A mid and hot room means the blinds go to the mid position (mid - green). 
 	Easiest way to test is to test is turn potentiometer way up (clockwise).
 
 Any remaining hot and cold position keeps blinds in their existing state.
@@ -102,7 +102,7 @@ These combinations from above will allow the home automation system to save ener
 Now for the admin screen. 
 
 You can also log in to the admin screen (go back a lot to get back to the pin pad screen).
-Login using the password. You have two options, the ability to set global low and high temps on all users for their AC settings and the ability to go into user profiles, where you can directly access user profiles to view and modify their settings. You can also delete profiles (but be careful if you do as deleting will remove it and there is no way to add back without repowering the board).
+Login using the password. You have two options, the ability to set global low and high temps on all users for their AC settings and the ability to go into user profiles, where you can directly access user profiles to view and modify their settings. You can also delete profiles (but be careful if you do as deleting will remove it and there is no way to get the user back without repowering the board).
 
 
 Code Structure:
@@ -117,7 +117,4 @@ peripherals.c -> GPIO direction setup for tricolour LEDs
 coffee_screen.c/.h -> Coffee screen (Should be moved into screens folder but we are too scared to make any code changes now that we can't re-verify physically on board so it stays here now)
 screens/ -> All screens, one file per screen (pinpad login, home, lights, temp, blind, admin, control, profiles, schedule)
 lcd/ -> LCD, just taken from Lab 6.
-
-
-
 
