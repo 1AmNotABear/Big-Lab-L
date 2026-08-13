@@ -3,11 +3,11 @@
 #include "ADC.h"
 #include "temperature.h"
 
-// light is readADC()'s raw 0-1023 value
+// Light values configured by seeing the recorded ADC in the lab
 #define TEMP_COLD_MAX   15
 #define TEMP_HOT_MIN    24
-#define LIGHT_LOW_MAX   80
-#define LIGHT_HIGH_MIN  150
+#define LIGHT_LOW_MAX   7
+#define LIGHT_HIGH_MIN  40
 
 // Defining the pins for each LED color light
 #define LED1_RED (1 << 16) // P3.16

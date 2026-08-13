@@ -106,6 +106,7 @@ ProfilesResult profiles_screen_step(void)
     int userIndex;
     ProfilesResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawProfilesScreen();
@@ -114,26 +115,31 @@ ProfilesResult profiles_screen_step(void)
 
     result = PROFILES_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
 
         if (option == 0) {
             result = PROFILES_SELECTED_HOME;
         } else if (option >= 1) {
+            // turn the option back into a row + whether it's the DEL side
             row = (option - 1) / 2;
             isDelete = (option - 1) % 2;
             userIndex = rowUserIndex[row];
 
             if (isDelete) {
+                // deactivate the user and redraw the list without them
                 users[userIndex].active = 0;
                 drawProfilesScreen();
             } else {
+                // pick this user and hand back to the caller
                 currentUser = &users[userIndex];
                 result = PROFILES_SELECTED_USER;
             }
         }
     }
 
+    // next call starts a fresh screen
     if (result != PROFILES_IN_PROGRESS) {
         active = 0;
     }

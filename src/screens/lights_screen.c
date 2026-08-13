@@ -116,6 +116,7 @@ LightsResult lights_screen_step(void)
     int i;
     LightsResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawLightsScreen();
@@ -124,25 +125,30 @@ LightsResult lights_screen_step(void)
 
     result = LIGHTS_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
 
         if (option == 0) {
             result = LIGHTS_SELECTED_HOME;
         } else if (option >= 1 && option <= 8) {
+            // toggle just that one light and redraw its button
             homeState.roomLights ^= lightButtons[option - 1].bit;
             drawLightAt(option - 1);
         } else if (option == 9) {
+            // ALL ON - flip every light on and redraw the whole grid
             homeState.roomLights |= ALL_LIGHTS;
             for (i = 0; i < 8; i++)
                 drawLightAt(i);
         } else if (option == 10) {
+            // ALL OFF - flip every light off and redraw the whole grid
             homeState.roomLights &= (unsigned short)~ALL_LIGHTS;
             for (i = 0; i < 8; i++)
                 drawLightAt(i);
         }
     }
 
+    // next call starts a fresh screen
     if (result != LIGHTS_IN_PROGRESS) {
         active = 0;
     }

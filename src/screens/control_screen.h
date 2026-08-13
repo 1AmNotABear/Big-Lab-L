@@ -3,11 +3,11 @@
 
 typedef enum {
     CONTROL_IN_PROGRESS,
-    CONTROL_SELECTED_HOME
+    CONTROL_SELECTED_BACK
 } ControlResult;
 
 /* Lets the logged-in admin (currentUser) adjust tempHighLimit and
-   tempLowLimit with +/- buttons. HOME is the only way off this screen. */
+   tempLowLimit with +/- buttons. BACK is the only way off this screen. */
 ControlResult control_screen_step(void);
 
 #endif

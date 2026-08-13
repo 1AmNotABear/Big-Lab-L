@@ -140,6 +140,7 @@ PinpadResult pinpad_screen_step(void)
     UserSettings *matched;
     PinpadResult result;
 
+    // first call after a reset draw the keypad from scratch
     if (!active) {
         clearEntry();
         touch_debounce_init(&touchState);
@@ -149,6 +150,7 @@ PinpadResult pinpad_screen_step(void)
 
     submit_requested = 0;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         key = coordinates_to_key(screen_x, screen_y);
 
@@ -168,6 +170,7 @@ PinpadResult pinpad_screen_step(void)
         }
     }
 
+    // pin's full or OK was hit check it against the user list
     if (counter >= PIN_LENGTH || submit_requested) {
         for (i = 0; i < counter; i++)
             attempt[i] = (char)('0' + entered_pin[i]);

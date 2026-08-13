@@ -116,6 +116,7 @@ HomeResult home_screen_step(const char *userId)
     int option;
     HomeResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawHomeScreen(userId);
@@ -124,6 +125,7 @@ HomeResult home_screen_step(const char *userId)
 
     result = HOME_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
         if (option != -1) {

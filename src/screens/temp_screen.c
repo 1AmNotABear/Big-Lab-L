@@ -126,6 +126,7 @@ TempResult temp_screen_step(void)
     int option;
     TempResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawTemperatureScreen();
@@ -134,27 +135,32 @@ TempResult temp_screen_step(void)
 
     result = TEMP_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
 
         if (option == 0) {
             result = TEMP_SELECTED_HOME;
         } else if (option == 1) {
+            // SET+ - bump the set point up to the admin's HI limit
             if (homeState.tempSetPoint < users[0].tempHighLimit) {
                 homeState.tempSetPoint++;
                 drawValue(172, 84, 208, 104, homeState.tempSetPoint);
             }
         } else if (option == 2) {
+            // SET- - drop the set point down to the admin's LO limit
             if (homeState.tempSetPoint > users[0].tempLowLimit) {
                 homeState.tempSetPoint--;
                 drawValue(172, 84, 208, 104, homeState.tempSetPoint);
             }
         } else if (option == 3) {
+            // OFF - flip the system on/off and redraw the button
             homeState.tempOff = !homeState.tempOff;
             drawOffButton();
         }
     }
 
+    // next call starts a fresh screen
     if (result != TEMP_IN_PROGRESS) {
         active = 0;
     }

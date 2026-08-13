@@ -136,6 +136,7 @@ BlindResult blind_screen_step(void)
     int i;
     BlindResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawBlindScreen();
@@ -144,12 +145,14 @@ BlindResult blind_screen_step(void)
 
     result = BLIND_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
 
         if (option == 0) {
             result = BLIND_SELECTED_HOME;
         } else if (option >= 1 && option <= 3) {
+            // blind 1 button - move it and flag it as manually overridden
             homeState.blind1 = blindButtons[option - 1].position;
             homeState.blind1Override = 1;
             updateBlindState(&homeState);
@@ -157,6 +160,7 @@ BlindResult blind_screen_step(void)
                 drawBlindAt(i);
             drawOverrideAt(1);
         } else if (option >= 4 && option <= 6) {
+            // blind 2 button - move it and flag it as manually overridden
             homeState.blind2 = blindButtons[option - 1].position;
             homeState.blind2Override = 1;
             updateBlindState(&homeState);
@@ -164,14 +168,17 @@ BlindResult blind_screen_step(void)
                 drawBlindAt(i);
             drawOverrideAt(2);
         } else if (option == 7) {
+            // toggle blind 1's manual override
             homeState.blind1Override ^= 1;
             drawOverrideAt(1);
         } else if (option == 8) {
+            // toggle blind 2's manual override
             homeState.blind2Override ^= 1;
             drawOverrideAt(2);
         }
     }
 
+    // next call starts a fresh screen
     if (result != BLIND_IN_PROGRESS) {
         active = 0;
     }

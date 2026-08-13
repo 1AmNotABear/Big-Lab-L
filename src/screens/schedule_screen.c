@@ -101,6 +101,7 @@ ScheduleResult schedule_screen_step(void)
     int option;
     ScheduleResult result;
 
+    // first call after a reset, load the user's saved time and draw from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         selected_hour = currentUser->coffeeSchedule.time.hour;
@@ -112,24 +113,30 @@ ScheduleResult schedule_screen_step(void)
 
     result = SCHEDULE_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
 
         if (option == 0) {
             result = SCHEDULE_SELECTED_HOME;
         } else if (option == 1) {
+            // HR+ - wraps 23 back around to 0
             selected_hour = (selected_hour + 1 > 23) ? 0 : selected_hour + 1;
             drawValue(16, 110, 118, 140, selected_hour);
         } else if (option == 2) {
+            // HR- - wraps 0 back around to 23
             selected_hour = (selected_hour - 1 < 0) ? 23 : selected_hour - 1;
             drawValue(16, 110, 118, 140, selected_hour);
         } else if (option == 3) {
+            // MIN+ - wraps 59 back around to 0
             selected_minute = (selected_minute + 1 > 59) ? 0 : selected_minute + 1;
             drawValue(122, 110, 224, 140, selected_minute);
         } else if (option == 4) {
+            // MIN- - wraps 0 back around to 59
             selected_minute = (selected_minute - 1 < 0) ? 59 : selected_minute - 1;
             drawValue(122, 110, 224, 140, selected_minute);
         } else if (option == 5) {
+            // SET - save the chosen time and turn the schedule on
             currentUser->coffeeSchedule.time.hour = selected_hour;
             currentUser->coffeeSchedule.time.minute = selected_minute;
             currentUser->coffeeSchedule.enabled = 1;
@@ -138,6 +145,7 @@ ScheduleResult schedule_screen_step(void)
         }
     }
 
+    // next call starts a fresh screen
     if (result != SCHEDULE_IN_PROGRESS) {
         active = 0;
     }

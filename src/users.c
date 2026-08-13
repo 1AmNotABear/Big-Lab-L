@@ -11,8 +11,8 @@ UserSettings users[NUM_USERS] = {
         { { { 0, 0 }, 0, BLIND_ROLLED_UP } },  // blindSchedule (blank)
         0,              // blindActionCount
         { { 0, 0 }, 0 },  // coffeeSchedule (blank, disabled)
-        0,              // tempHighLimit
-        0               // tempLowLimit
+        30,             // tempHighLimit
+        15              // tempLowLimit
     },
     {
         "0001",

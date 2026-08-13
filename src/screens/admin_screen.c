@@ -17,9 +17,12 @@ static int active = 0;
 
 static TouchDebounceState touchState;
 
-// -1 = no option under this point, 1 = CONTROL, 0 = USER PROFILE
+// -1 = no option under this point, 2 = BACK, 1 = CONTROL, 0 = USER PROFILE
 static int coordinates_to_option(int x, int y)
 {
+    if (x >= 8 && x <= 60 && y >= 8 && y <= 30)
+        return 2;
+
     if (x < 16 || x > 222)
         return -1;
 
@@ -43,6 +46,9 @@ static void drawAdminScreen(void)
     // draw the green line underneath the heading
     lcd_line(74, 49, 166, 49, TITLE_COLOR);
 
+    // BACK button, logs the admin out back to the password screen
+    drawButton(8, 8, 60, 30, "BACK");
+
     // admin control / user profile buttons
     drawButton(16, 120, 222, 200, "CONTROL");
     drawButton(16, 208, 222, 288, "USER PROFILE");
@@ -55,6 +61,7 @@ AdminResult admin_screen_step(void)
     int option;
     AdminResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawAdminScreen();
@@ -63,12 +70,15 @@ AdminResult admin_screen_step(void)
 
     result = ADMIN_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
         if (option == 1) {
             result = ADMIN_SELECTED_CONTROL;
         } else if (option == 0) {
             result = ADMIN_SELECTED_PROFILE;
+        } else if (option == 2) {
+            result = ADMIN_SELECTED_BACK;
         }
     }
 

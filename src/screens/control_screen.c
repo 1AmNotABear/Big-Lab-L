@@ -17,10 +17,10 @@ static int active = 0;
 
 static TouchDebounceState touchState;
 
-// -1 = nothing, 0 = HOME, 1 = HI+, 2 = HI-, 3 = LO+, 4 = LO-
+// -1 = nothing, 0 = BACK, 1 = HI+, 2 = HI-, 3 = LO+, 4 = LO-
 static int coordinates_to_option(int x, int y)
 {
-    // HOME button, top-left (same spot as the BACK button on the home screen)
+    // BACK button, top-left (same spot as the BACK button on the home screen)
     if (x >= 8 && x <= 60 && y >= 8 && y <= 30)
         return 0;
 
@@ -67,7 +67,7 @@ static void drawControlScreen(void)
     lcd_putString(96, 35, (unsigned char *)"CONTROLS");
     lcd_line(74, 49, 166, 49, TITLE_COLOR);
 
-    drawButton(8, 8, 60, 30, "HOME");
+    drawButton(8, 8, 60, 30, "BACK");
 
     lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
     lcd_putString(16, 60, (unsigned char *)"HI Temp:");
@@ -89,6 +89,7 @@ ControlResult control_screen_step(void)
     int option;
     ControlResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawControlScreen();
@@ -97,26 +98,32 @@ ControlResult control_screen_step(void)
 
     result = CONTROL_IN_PROGRESS;
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
 
         if (option == 0) {
-            result = CONTROL_SELECTED_HOME;
+            result = CONTROL_SELECTED_BACK;
         } else if (option == 1) {
+            // HI+ - bump the high limit and redraw just that number
             currentUser->tempHighLimit = clampTemp(currentUser->tempHighLimit + 1);
             drawValue(170, 54, 206, 74, currentUser->tempHighLimit);
         } else if (option == 2) {
+            // HI- - drop the high limit and redraw just that number
             currentUser->tempHighLimit = clampTemp(currentUser->tempHighLimit - 1);
             drawValue(170, 54, 206, 74, currentUser->tempHighLimit);
         } else if (option == 3) {
+            // LO+ - bump the low limit and redraw just that number
             currentUser->tempLowLimit = clampTemp(currentUser->tempLowLimit + 1);
             drawValue(170, 124, 206, 144, currentUser->tempLowLimit);
         } else if (option == 4) {
+            // LO- - drop the low limit and redraw just that number
             currentUser->tempLowLimit = clampTemp(currentUser->tempLowLimit - 1);
             drawValue(170, 124, 206, 144, currentUser->tempLowLimit);
         }
     }
 
+    // next call starts a fresh screen
     if (result != CONTROL_IN_PROGRESS) {
         active = 0;
     }

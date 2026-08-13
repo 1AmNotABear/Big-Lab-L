@@ -1,67 +1,54 @@
 # include "lpc24xx.h"
-# define PINSEL_CLR (3 << 16)   // clears PINSEL AD0[1] (P0.24)
-# define PINSEL_SET (1 << 16)   // sets PINSEL AD0[1] to 01
-# define PINMODE_CLR (3 << 16)  // clears PINMODE for P0.24
-# define PINMODE_SET (2 << 16)  // P0.24: neither pull-up nor pull-down (analog input)
-# define AD0CR_CTRL ((1 << 1) | (3 << 8) | (1 << 21)) // select AD0.1, set clock, power on
-# define PCONP_BIT (1 << 12)
-# define ADC_TIMEOUT 100000     // guard so a dead ADC doesn't hang the caller
 
 void setupADC(void) {
-    PCONP |= PCONP_BIT;     // Power on the ADC before touching its registers
+    PCONP |= (1 << 12);     // Power on the ADC before touching its registers
 
-    // Configure the pin as AD0.1 with no pull-up (the default pull-up loads the sensor)
-    PINSEL1 &= ~PINSEL_CLR;
-    PINSEL1 |= PINSEL_SET;
-    PINMODE1 &= ~PINMODE_CLR;
-    PINMODE1 |= PINMODE_SET;
+    // Configure the pin as AD0.1
+    PINSEL1 &= ~(3 << 16);  // clears PINSEL AD0[1] (P0.24)
+    PINSEL1 |= (1 << 16);   // sets PINSEL AD0[1] to 01
+    PINMODE1 &= ~(3 << 16); // clears PINMODE for P0.24
+    PINMODE1 |= (2 << 16);  // P0.24: neither pull-up nor pull-down (analog input)
 
     // Set the ADC to software controlled conversion mode, not burst mode
-    AD0CR = AD0CR_CTRL;
+    AD0CR = (1 << 1) | (3 << 8) | (1 << 21); // select AD0.1, set clock, power on
 }
 
 unsigned int readADC(void) {
     unsigned long result;
-    unsigned int guard = ADC_TIMEOUT;
 
     // Full write (not |=) so DONE is cleared as the conversion is started
-    AD0CR = AD0CR_CTRL | (1 << 24);   // start conversion on AD0.1 immediately
+    AD0CR = (1 << 1) | (3 << 8) | (1 << 21) | (1 << 24);   // select AD0.1, set clock, power on, start conversion immediately
 
     // Read the register once per poll - reading it clears DONE
-    do {
+    result = AD0DR1;
+    while (((result & (1UL << 31)) == 0)) {
         result = AD0DR1;
-    } while (((result & (1UL << 31)) == 0) && --guard);
+    }
 
     return (unsigned int)((result >> 6) & 0x3FF); // Return the converted value
 }
 
-# define TEMP_PINSEL_CLR (3 << 18)   // clears PINSEL AD0[2] (P0.25)
-# define TEMP_PINSEL_SET (1 << 18)   // sets PINSEL AD0[2] to 01
-# define TEMP_PINMODE_CLR (3 << 18)  // clears PINMODE for P0.25
-# define TEMP_PINMODE_SET (2 << 18)  // P0.25: neither pull-up nor pull-down (analog input)
-# define AD0CR_CTRL2 ((1 << 2) | (3 << 8) | (1 << 21)) // select AD0.2, set clock, power on
-
 void setupTempADC(void) {
-    PCONP |= PCONP_BIT;     // Power on the ADC before touching its registers
+    PCONP |= (1 << 12);     // Power on the ADC before touching its registers
 
     // Configure the pin as AD0.2 (the "Analog Input" pot, R42)
-    PINSEL1 &= ~TEMP_PINSEL_CLR;
-    PINSEL1 |= TEMP_PINSEL_SET;
-    PINMODE1 &= ~TEMP_PINMODE_CLR;
-    PINMODE1 |= TEMP_PINMODE_SET;
+    PINSEL1 &= ~(3 << 18);  // clears PINSEL AD0[2] (P0.25)
+    PINSEL1 |= (1 << 18);   // sets PINSEL AD0[2] to 01
+    PINMODE1 &= ~(3 << 18); // clears PINMODE for P0.25
+    PINMODE1 |= (2 << 18);  // P0.25: neither pull-up nor pull-down (analog input)
 
-    AD0CR = AD0CR_CTRL2;
+    AD0CR = (1 << 2) | (3 << 8) | (1 << 21); // select AD0.2, set clock, power on
 }
 
 unsigned int readTempADC(void) {
     unsigned long result;
-    unsigned int guard = ADC_TIMEOUT;
 
-    AD0CR = AD0CR_CTRL2 | (1 << 24);   // start conversion on AD0.2 immediately
+    AD0CR = (1 << 2) | (3 << 8) | (1 << 21) | (1 << 24);   // select AD0.2, set clock, power on, start conversion immediately
 
-    do {
+    result = AD0DR2;
+    while (((result & (1UL << 31)) == 0)) {
         result = AD0DR2;
-    } while (((result & (1UL << 31)) == 0) && --guard);
+    }
 
     return (unsigned int)((result >> 6) & 0x3FF); // Return the converted value
 }

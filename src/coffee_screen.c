@@ -116,6 +116,7 @@ CoffeeResult coffee_screen_step(void)
     int option;
     CoffeeResult result;
 
+    // first call after a reset, draw the screen from scratch
     if (!active) {
         touch_debounce_init(&touchState);
         drawCoffeeScreen();
@@ -124,19 +125,23 @@ CoffeeResult coffee_screen_step(void)
 
     result = COFFEE_IN_PROGRESS;
 
+    // update the clock display every poll, not just on a touch
     drawTime();
 
+    // hardware override button - if it's pressed and coffee's on, turn it off
     if ((FIO0PIN & OVERRIDE_BTN) && (homeState.roomLights & COFFEE_STATUS)) {
         homeState.roomLights &= (unsigned short)~COFFEE_STATUS;
         drawCoffeeButton();
     }
 
+    // got a touch this poll, work out which button it landed on
     if (touch_poll_press(&touchState, &screen_x, &screen_y)) {
         option = coordinates_to_option(screen_x, screen_y);
 
         if (option == 0) {
             result = COFFEE_SELECTED_HOME;
         } else if (option == 1) {
+            // toggle the coffee machine on/off
             homeState.roomLights ^= COFFEE_STATUS;
             drawCoffeeButton();
         } else if (option == 2) {
@@ -144,6 +149,7 @@ CoffeeResult coffee_screen_step(void)
         }
     }
 
+    // next call starts a fresh screen
     if (result != COFFEE_IN_PROGRESS) {
         active = 0;
     }
