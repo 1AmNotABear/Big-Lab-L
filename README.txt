@@ -45,7 +45,7 @@ All settings and home state like lights, blinds and coffee machine are retained 
 
 Note on the coffee schedule:
 
-The coffee schedule screen is used to set when the coffee machine smart plug turns on automatically via a timer being polled. 1 second in the real world equates to 1 hour in the simulation. The current time is displayed on the bottom of the coffee screen so you can use this to set an appropriate scheduled time. The scheduler is used to automatically turn the smart plug on, but does not offer the ability to schedule turn off times. Note when the scheduled time hits, if you are on the coffee screen it will not automatically refresh, you will need to go back out and then back in to see the coffee machine turned on (depicted as a yellow button for on, grey for off).
+The coffee schedule screen is used to set when the coffee machine smart plug turns on automatically via a timer being polled. 1 second in the real world equates to 1 minute in the simulation. The current time is displayed on the bottom of the coffee screen so you can use this to set an appropriate scheduled time. The scheduler is used to automatically turn the smart plug on, but does not offer the ability to schedule turn off times. Note when the scheduled time hits, if you are on the coffee screen it will not automatically refresh, you will need to go back out and then back in to see the coffee machine turned on (depicted as a yellow button for on, grey for off).
 
 Try out different screens yourself to see how it works.
 
