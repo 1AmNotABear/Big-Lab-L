@@ -24,6 +24,7 @@ void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigne
 unsigned int getTextLength(const char *text);
 
 static int active = 0;
+static int displaySetPoint = 0;
 
 static TouchDebounceState touchState;
 
@@ -61,21 +62,6 @@ static void drawCurrentTemp(int value)
     lcd_putString(178, 60, text);
 }
 
-// yellow when the system is off, gray when on
-static void drawOffButton(void)
-{
-    unsigned short bg = homeState.tempOff ? YELLOW : BUTTON_COLOR;
-    unsigned short fg = homeState.tempOff ? BLACK : TEXT_COLOR;
-    unsigned int labelLength = getTextLength("OFF");
-    unsigned short textX = (unsigned short)(70 + ((100 - labelLength * 6U) / 2U));
-    unsigned short textY = (unsigned short)(190 + ((40 - 8U) / 2U));
-
-    lcd_fillRect(70, 190, 170, 230, bg);
-    lcd_drawRect(70, 190, 170, 230, BORDER_COLOR);
-    lcd_fontColor(fg, bg);
-    lcd_putString(textX, textY, (unsigned char *)"OFF");
-}
-
 static void drawTemperatureScreen(void)
 {
     lcd_fillScreen(BACKGROUND_COLOR);
@@ -92,7 +78,11 @@ static void drawTemperatureScreen(void)
 
     lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
     lcd_putString(16, 90, (unsigned char *)"Set:");
-    drawValue(172, 84, 208, 104, homeState.tempSetPoint);
+    if (homeState.tempSetPoint >= users[0].tempLowLimit && homeState.tempSetPoint <= users[0].tempHighLimit)
+        displaySetPoint = homeState.tempSetPoint;
+    else
+        displaySetPoint = users[0].tempLowLimit;
+    drawValue(172, 84, 208, 104, displaySetPoint);
 
     drawButton(16, 110, 118, 146, "+");
     drawButton(122, 110, 224, 146, "-");
@@ -104,11 +94,9 @@ static void drawTemperatureScreen(void)
     drawValue(40, 154, 76, 174, users[0].tempLowLimit);
     lcd_putString(100, 160, (unsigned char *)"HI:");
     drawValue(124, 154, 160, 174, users[0].tempHighLimit);
-
-    drawOffButton();
 }
 
-// -1 = nothing, 0 = HOME, 1 = SET+, 2 = SET-, 3 = OFF
+// -1 = nothing, 0 = HOME, 1 = SET+, 2 = SET-
 static int coordinates_to_option(int x, int y)
 {
     if (x >= BACK_X0 && x <= BACK_X1 && y >= BACK_Y0 && y <= BACK_Y1)
@@ -118,9 +106,6 @@ static int coordinates_to_option(int x, int y)
         if (x >= 16 && x <= 118) return 1;
         if (x >= 122 && x <= 224) return 2;
     }
-
-    if (x >= 70 && x <= 170 && y >= 190 && y <= 230)
-        return 3;
 
     return -1;
 }
@@ -148,21 +133,19 @@ TempResult temp_screen_step(void)
         if (option == 0) {
             result = TEMP_SELECTED_HOME;
         } else if (option == 1) {
-            // SET+ - bump the set point up to the admin's HI limit
-            if (homeState.tempSetPoint < users[0].tempHighLimit) {
-                homeState.tempSetPoint++;
-                drawValue(172, 84, 208, 104, homeState.tempSetPoint);
+            // SET+ - bump the displayed set point up to the admin's HI limit, save on press
+            if (displaySetPoint < users[0].tempHighLimit) {
+                displaySetPoint++;
+                homeState.tempSetPoint = displaySetPoint;
+                drawValue(172, 84, 208, 104, displaySetPoint);
             }
         } else if (option == 2) {
-            // SET- - drop the set point down to the admin's LO limit
-            if (homeState.tempSetPoint > users[0].tempLowLimit) {
-                homeState.tempSetPoint--;
-                drawValue(172, 84, 208, 104, homeState.tempSetPoint);
+            // SET- - drop the displayed set point down to the admin's LO limit, save on press
+            if (displaySetPoint > users[0].tempLowLimit) {
+                displaySetPoint--;
+                homeState.tempSetPoint = displaySetPoint;
+                drawValue(172, 84, 208, 104, displaySetPoint);
             }
-        } else if (option == 3) {
-            // OFF - flip the system on/off and redraw the button
-            homeState.tempOff = !homeState.tempOff;
-            drawOffButton();
         }
     }
 

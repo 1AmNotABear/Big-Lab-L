@@ -42,7 +42,6 @@ typedef struct {
     int            blind2Override;  // 0 = automatic, 1 = manual override active
     unsigned short roomLights;
     int            tempSetPoint;  // thermostat set point, chosen by the user
-    int            tempOff;       // 0 = on, 1 = user pressed OFF
 } HomeState;
 
 /* Declared here, actually defined in homestate.c */
