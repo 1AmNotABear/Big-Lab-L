@@ -37,6 +37,7 @@ void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigne
 unsigned int getTextLength(const char *text);
 
 static int active = 0;
+static int overridePrev = 0;
 
 static TouchDebounceState touchState;
 
@@ -134,10 +135,14 @@ CoffeeResult coffee_screen_step(void)
     // update the clock display every poll, not just on a touch
     drawTime();
 
-    // hardware override button - if it's pressed and coffee's on, turn it off
-    if ((FIO0PIN & OVERRIDE_BTN) && (homeState.roomLights & COFFEE_STATUS)) {
-        homeState.roomLights &= (unsigned short)~COFFEE_STATUS;
-        drawCoffeeButton();
+    // hardware override button - toggle the coffee machine on the press edge
+    {
+        int overrideNow = (FIO0PIN & OVERRIDE_BTN) != 0;
+        if (overrideNow && !overridePrev) {
+            homeState.roomLights ^= COFFEE_STATUS;
+            drawCoffeeButton();
+        }
+        overridePrev = overrideNow;
     }
 
     // got a touch this poll, work out which button it landed on

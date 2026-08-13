@@ -43,8 +43,8 @@ static const BlindButton blindButtons[6] = {
 // draws one blind button, yellow when it matches the blind's current position
 static void drawBlindAt(int index)
 {
-    int row = index / 2;
-    int col = index % 2;
+    int row = index % 3;
+    int col = index / 3;
     unsigned short x0 = (col == 0) ? 16 : 122;
     unsigned short x1 = (col == 0) ? 118 : 224;
     unsigned short y0 = (unsigned short)(70 + row * 46);
@@ -131,7 +131,10 @@ static int coordinates_to_option(int x, int y)
     if (row > 3 || y > 70 + row * 46 + 40)
         return -1;
 
-    return (row * 2 + col) + 1;
+    if (row == 3)
+        return 7 + col;
+
+    return (col * 3 + row) + 1;
 }
 
 BlindResult blind_screen_step(void)

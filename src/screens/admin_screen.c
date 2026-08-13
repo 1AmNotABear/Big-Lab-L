@@ -11,10 +11,10 @@
 #define BUTTON_COLOR      DARK_GRAY
 #define BORDER_COLOR      CYAN
 
-// BACK button, top-left corner
-#define BACK_X0  4
+// BACK button, top-right corner
+#define BACK_X0  172
 #define BACK_Y0  4
-#define BACK_X1  68
+#define BACK_X1  236
 #define BACK_Y1  50
 
 void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1, const char *label);
