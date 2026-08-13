@@ -1,9 +1,0 @@
-output/*
-!output/debug.ini
-*.uvgui.*
-*.dep
-*_uvopt.bak
-*_uvproj.bak
-*.bak
-.DS_Store
-build-plan.html
