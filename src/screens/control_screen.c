@@ -11,6 +11,12 @@
 #define TEXT_COLOR        WHITE
 #define BORDER_COLOR      CYAN
 
+// BACK button, top-left corner
+#define BACK_X0  4
+#define BACK_Y0  4
+#define BACK_X1  68
+#define BACK_Y1  50
+
 void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1, const char *label);
 
 static int active = 0;
@@ -21,7 +27,7 @@ static TouchDebounceState touchState;
 static int coordinates_to_option(int x, int y)
 {
     // BACK button, top-left (same spot as the BACK button on the home screen)
-    if (x >= 8 && x <= 60 && y >= 8 && y <= 30)
+    if (x >= BACK_X0 && x <= BACK_X1 && y >= BACK_Y0 && y <= BACK_Y1)
         return 0;
 
     if (y >= 80 && y <= 110) {
@@ -67,7 +73,7 @@ static void drawControlScreen(void)
     lcd_putString(96, 35, (unsigned char *)"CONTROLS");
     lcd_line(74, 49, 166, 49, TITLE_COLOR);
 
-    drawButton(8, 8, 60, 30, "BACK");
+    drawButton(BACK_X0, BACK_Y0, BACK_X1, BACK_Y1, "BACK");
 
     lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
     lcd_putString(16, 60, (unsigned char *)"HI Temp:");

@@ -14,6 +14,12 @@
 #define BUTTON_COLOR      DARK_GRAY
 #define BORDER_COLOR      CYAN
 
+// HOME button, top-left corner
+#define BACK_X0  4
+#define BACK_Y0  4
+#define BACK_X1  68
+#define BACK_Y1  50
+
 void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1, const char *label);
 unsigned int getTextLength(const char *text);
 
@@ -78,7 +84,7 @@ static void drawTemperatureScreen(void)
     lcd_putString(87, 35, (unsigned char *)"TEMPERATURE");
     lcd_line(74, 49, 166, 49, TITLE_COLOR);
 
-    drawButton(8, 8, 60, 30, "HOME");
+    drawButton(BACK_X0, BACK_Y0, BACK_X1, BACK_Y1, "HOME");
 
     lcd_fontColor(TEXT_COLOR, BACKGROUND_COLOR);
     lcd_putString(16, 60, (unsigned char *)"Current:");
@@ -105,7 +111,7 @@ static void drawTemperatureScreen(void)
 // -1 = nothing, 0 = HOME, 1 = SET+, 2 = SET-, 3 = OFF
 static int coordinates_to_option(int x, int y)
 {
-    if (x >= 8 && x <= 60 && y >= 8 && y <= 30)
+    if (x >= BACK_X0 && x <= BACK_X1 && y >= BACK_Y0 && y <= BACK_Y1)
         return 0;
 
     if (y >= 110 && y <= 146) {

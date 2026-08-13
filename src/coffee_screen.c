@@ -13,6 +13,12 @@
 #define BUTTON_COLOR      DARK_GRAY
 #define BORDER_COLOR      CYAN
 
+// HOME button, top-left corner
+#define BACK_X0  4
+#define BACK_Y0  4
+#define BACK_X1  68
+#define BACK_Y1  50
+
 #define OVERRIDE_BTN (1 << 11) // P0.11, hardware-debounced push button (coffee manual override)
 
 #define COFFEE_X0    16
@@ -83,7 +89,7 @@ static void drawCoffeeScreen(void)
 {
     lcd_fillScreen(BACKGROUND_COLOR);
 
-    drawButton(8, 8, 60, 30, "HOME");
+    drawButton(BACK_X0, BACK_Y0, BACK_X1, BACK_Y1, "HOME");
 
     drawCoffeeButton();
 
@@ -97,7 +103,7 @@ static void drawCoffeeScreen(void)
 // -1 = nothing, 0 = HOME, 1 = COFFEE, 2 = COFFEE SCHEDULE
 static int coordinates_to_option(int x, int y)
 {
-    if (x >= 8 && x <= 60 && y >= 8 && y <= 30)
+    if (x >= BACK_X0 && x <= BACK_X1 && y >= BACK_Y0 && y <= BACK_Y1)
         return 0;
 
     if (x >= COFFEE_X0 && x <= COFFEE_X1 && y >= COFFEE_Y0 && y <= COFFEE_Y1)

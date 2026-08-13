@@ -12,10 +12,10 @@
 #define BORDER_COLOR      CYAN
 
 // BACK button, top-left corner
-#define BACK_X0  8
-#define BACK_Y0  8
-#define BACK_X1  60
-#define BACK_Y1  30
+#define BACK_X0  4
+#define BACK_Y0  4
+#define BACK_X1  68
+#define BACK_Y1  50
 
 // 2x2 grid of feature buttons
 #define GRID_X0    16

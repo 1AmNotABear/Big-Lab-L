@@ -11,6 +11,12 @@
 #define BUTTON_COLOR      DARK_GRAY
 #define BORDER_COLOR      CYAN
 
+// BACK button, top-left corner
+#define BACK_X0  4
+#define BACK_Y0  4
+#define BACK_X1  68
+#define BACK_Y1  50
+
 void drawButton(unsigned short x0, unsigned short y0, unsigned short x1, unsigned short y1, const char *label);
 
 static int active = 0;
@@ -20,7 +26,7 @@ static TouchDebounceState touchState;
 // -1 = no option under this point, 2 = BACK, 1 = CONTROL, 0 = USER PROFILE
 static int coordinates_to_option(int x, int y)
 {
-    if (x >= 8 && x <= 60 && y >= 8 && y <= 30)
+    if (x >= BACK_X0 && x <= BACK_X1 && y >= BACK_Y0 && y <= BACK_Y1)
         return 2;
 
     if (x < 16 || x > 222)
@@ -47,7 +53,7 @@ static void drawAdminScreen(void)
     lcd_line(74, 49, 166, 49, TITLE_COLOR);
 
     // BACK button, logs the admin out back to the password screen
-    drawButton(8, 8, 60, 30, "BACK");
+    drawButton(BACK_X0, BACK_Y0, BACK_X1, BACK_Y1, "BACK");
 
     // admin control / user profile buttons
     drawButton(16, 120, 222, 200, "CONTROL");

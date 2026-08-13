@@ -95,8 +95,8 @@ int touch_poll_press(TouchDebounceState *state, int *screen_x, int *screen_y)
 	int pressure;
 	int touching;
 
-	// every screen polls via this function, so it's also where the sim
-	// clock gets advanced
+	// keep the clock updated every time we check for a touch
+	// (this way we don't need a separate timer interrupt)
 	clock_poll();
 
 	// small settle delay between samples - lets the resistive panel/SPI
