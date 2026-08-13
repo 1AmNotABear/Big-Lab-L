@@ -111,7 +111,8 @@ homestate.c/.h -> State object of all appliances in the home
 users.c/.h -> Where users are stored and their password and settings for appliances
 clock.c/.h -> Timer0 sim-clock + poll handling for blinds and schedules
 ADC.c/.h -> light sensor + temp pot setup & reads
-temperature.c/.h -> converts raw temp ADC reading to degCblinds.c/.h
+temperature.c/.h -> converts raw temp ADC reading to degC
+blinds.c/.h -> smart blind algorithm (light + temp thresholds) + drives the tricolour LEDs on P3.16 - P3.21
 doorbell.c/.h -> P0.10 button read + DAC-driven chime (speaker)
 peripherals.c -> GPIO direction setup for tricolour LEDs
 coffee_screen.c/.h -> Coffee screen (Should be moved into screens folder but we are too scared to make any code changes now that we can't re-verify physically on board so it stays here now)
